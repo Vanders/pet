@@ -6,8 +6,10 @@ import (
 
 // PIA models a Pheripheral Interface Adaptor
 type PIA struct {
-	Base  mos6502.Word    // Base address
-	Ports [4]mos6502.Byte // 4 8 bit ports
+	Base mos6502.Word // Base address
+
+	PortRead  func(p int) mos6502.Byte
+	PortWrite func(p int, data mos6502.Byte)
 }
 
 func (p *PIA) GetBase() mos6502.Word {
@@ -19,16 +21,16 @@ func (p *PIA) GetSize() mos6502.Word {
 }
 
 func (p *PIA) Read(address mos6502.Word) mos6502.Byte {
-	port := address - p.Base
+	port := int(address - p.Base)
 	if port >= 0 && port <= 3 {
-		return p.Ports[port]
+		return p.PortRead(port)
 	}
 	return mos6502.Byte(0)
 }
 
 func (p *PIA) Write(address mos6502.Word, data mos6502.Byte) {
-	port := address - p.Base
+	port := int(address - p.Base)
 	if port >= 0 && port <= 3 {
-		p.Ports[port] = data
+		p.PortWrite(port, data)
 	}
 }
