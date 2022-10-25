@@ -97,7 +97,14 @@ func (c *CPU) UpdateP(data Byte) {
 func (c *CPU) Step() error {
 	// Fetch next instruction from PC
 	opcode := c.FetchByte()
-	c.Log("%d:\t0x%.2x:\t0x%.2x:\t", c.insCount, c.PC.Get()-1, opcode)
+	c.Log("%d:\t0x%.2x:\t0x%.2x:\t(S: %s)\t(A: %s, X: %s: Y: %s)\t",
+		c.insCount,
+		c.PC.Get()-1,
+		opcode,
+		c.Registers.S,
+		c.Registers.A,
+		c.Registers.X,
+		c.Registers.Y)
 	c.IR.Set(opcode)
 
 	// Decode
