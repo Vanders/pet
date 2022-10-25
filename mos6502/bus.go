@@ -29,6 +29,8 @@ func (c *CPU) FetchByteMode(m AddrMode) (Byte, error) {
 		return c.FetchByteAbsoluteY(), nil
 	case ZERO_PAGE:
 		return c.FetchByteZeroPage(), nil
+	case ZERO_PAGE_X:
+		return c.FetchByteZeroPageX(), nil
 	case INDIRECT_Y:
 		return c.FetchByteIndirectY(), nil
 	default:
@@ -58,6 +60,11 @@ func (c *CPU) FetchByteAbsoluteY() Byte {
 func (c *CPU) FetchByteZeroPage() Byte {
 	zpa := c.FetchByte()
 	return c.ReadByte(Word(zpa))
+}
+
+func (c *CPU) FetchByteZeroPageX() Byte {
+	zpa := c.FetchByte()
+	return c.ReadByte(Word(zpa) + Word(c.Registers.X.Get()))
 }
 
 func (c *CPU) FetchByteIndirectY() Byte {
