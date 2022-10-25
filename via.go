@@ -29,6 +29,10 @@ func (v *VIA) GetSize() mos6502.Word {
 	return mos6502.Word(16)
 }
 
+func (v *VIA) CheckInterrupt() bool {
+	return false
+}
+
 func (v *VIA) Read(address mos6502.Word) mos6502.Byte {
 	port := address - v.Base
 	switch port {

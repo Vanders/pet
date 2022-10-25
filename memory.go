@@ -15,6 +15,7 @@ type ReadWriter interface {
 type Device interface {
 	GetBase() mos6502.Word
 	GetSize() mos6502.Word
+	CheckInterrupt() bool
 	ReadWriter
 }
 

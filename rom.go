@@ -21,6 +21,10 @@ func (r *ROM) GetSize() mos6502.Word {
 	return r.Size
 }
 
+func (r *ROM) CheckInterrupt() bool {
+	return false
+}
+
 func (r *ROM) Reset() {
 	r.mem = make([]mos6502.Byte, r.Size)
 

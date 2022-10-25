@@ -109,3 +109,11 @@ func (c *CPU) Step() error {
 
 	return nil
 }
+
+// Raise interrupt
+func (c *CPU) Interrupt() {
+	c.PushWord(c.PC.Get() - 1)
+	c.PushByte(c.Registers.P.GetByte())
+	addr := c.ReadWord(VEC_INTERRUPT)
+	c.PC.Set(addr)
+}

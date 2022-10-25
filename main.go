@@ -59,6 +59,7 @@ func main() {
 	}
 	pia.PortRead = pia1.PortRead
 	pia.PortWrite = pia1.PortWrite
+	pia.IRQ = pia1.IRQ
 	mem.Map(pia)
 
 	pia2 := &PIA2{}
@@ -67,6 +68,7 @@ func main() {
 	}
 	pia.PortRead = pia2.PortRead
 	pia.PortWrite = pia2.PortWrite
+	pia.IRQ = pia2.IRQ
 	mem.Map(pia)
 
 	via := &VIA{
@@ -86,6 +88,13 @@ func main() {
 		err := cpu.Step()
 		if err != nil {
 			dumpAndExit(&cpu, fmt.Errorf("\nexecution stopped: %s", err))
+		}
+
+		// Check devices for interrupts
+		for _, d := range mem.Devices {
+			if d.CheckInterrupt() {
+				cpu.Interrupt()
+			}
 		}
 	}
 }
@@ -114,6 +123,10 @@ func (p *PIA1) PortWrite(port int, data mos6502.Byte) {
 	p.ports[port] = data
 }
 
+func (p *PIA1) IRQ() bool {
+	return false
+}
+
 // Pheripheral Interface Adaptor #2
 type PIA2 struct {
 	ports [4]mos6502.Byte // 4 8bit ports
@@ -125,4 +138,8 @@ func (p *PIA2) PortRead(port int) mos6502.Byte {
 
 func (p *PIA2) PortWrite(port int, data mos6502.Byte) {
 	p.ports[port] = data
+}
+
+func (p *PIA2) IRQ() bool {
+	return false
 }
