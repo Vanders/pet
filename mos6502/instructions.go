@@ -110,15 +110,21 @@ func (c *CPU) op_branch_relative(addr Byte) {
 // Branch on Carry Clear
 func (c *CPU) op_bcc(i Instruction) error {
 	addr := c.FetchByte()
-	if c.Registers.P.C == true {
+	if c.Registers.P.C == false {
 		c.op_branch_relative(addr)
 	}
 
 	return nil
 }
 
+// Branch on Carry Set
 func (c *CPU) op_bcs(i Instruction) error {
-	return errUnimplemented
+	addr := c.FetchByte()
+	if c.Registers.P.C == true {
+		c.op_branch_relative(addr)
+	}
+
+	return nil
 }
 
 // Branch on Result Zero
