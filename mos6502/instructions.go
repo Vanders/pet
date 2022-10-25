@@ -188,9 +188,6 @@ func (c *CPU) op_bit(i Instruction) error {
 	return nil
 }
 
-func (c *CPU) op_rol(i Instruction) error {
-	return errUnimplemented
-}
 func (c *CPU) op_rti(i Instruction) error {
 	return errUnimplemented
 }
@@ -224,8 +221,114 @@ func (c *CPU) op_plp(i Instruction) error {
 	return nil
 }
 
+// Rotate One Bit Left (Memory or Accumulator)
+func (c *CPU) op_rol(i Instruction) error {
+	rol := func(data Byte) Byte {
+		// old carry becomes bit 0, carry is set to bit 7
+		carry := c.Registers.P.C
+		c.Registers.P.SetCarry(data&BIT_7 != 0)
+
+		// shift & handle carry bit
+		data = data << 1
+
+		if carry {
+			// old carry was 1, set bit 0
+			data |= BIT_0
+		} else {
+			// old carry was 0, clear bit 0
+			data &= 0xfe
+		}
+		return data
+	}
+
+	switch i.Mode {
+	case ACCUMULATOR:
+		data := c.Registers.A.Get()
+
+		data = rol(data)
+
+		c.Registers.A.Set(data)
+		c.Registers.P.Update(data)
+	case ZERO_PAGE:
+		zpa := c.FetchByte()
+		data := c.ReadByte(Word(zpa))
+
+		data = rol(data)
+
+		c.WriteByteZeroPage(zpa, data)
+		c.Registers.P.Update(data)
+	case ZERO_PAGE_X:
+		zpa := c.FetchByte()
+		data := c.ReadByte(Word(zpa))
+
+		data = rol(data)
+
+		c.WriteByteZeroPageX(zpa, data)
+		c.Registers.P.Update(data)
+	case ABSOLUTE:
+		return errUnsupportedMode
+	case ABSOLUTE_X:
+		return errUnsupportedMode
+	default:
+		return errUnsupportedMode
+	}
+
+	return nil
+}
+
+// Rotate One Bit Right (Memory or Accumulator)
 func (c *CPU) op_ror(i Instruction) error {
-	return errUnimplemented
+	ror := func(data Byte) Byte {
+		// old carry becomes bit 7, carry is set to bit 0
+		carry := c.Registers.P.C
+		c.Registers.P.SetCarry(data&BIT_0 != 0)
+
+		// shift & handle carry bit
+		data = data >> 1
+
+		if carry {
+			// old carry was 1, set bit 7
+			data |= BIT_7
+		} else {
+			// old carry was 0, clear bit 7
+			data &= 0x7f
+		}
+		return data
+	}
+
+	switch i.Mode {
+	case ACCUMULATOR:
+		data := c.Registers.A.Get()
+
+		data = ror(data)
+
+		c.Registers.A.Set(data)
+		c.Registers.P.Update(data)
+	case ZERO_PAGE:
+		zpa := c.FetchByte()
+		data := c.ReadByte(Word(zpa))
+
+		data = ror(data)
+
+		c.WriteByteZeroPage(zpa, data)
+		c.Registers.P.Update(data)
+	case ZERO_PAGE_X:
+		zpa := c.FetchByte()
+		data := c.ReadByte(Word(zpa))
+
+		data = ror(data)
+
+		c.WriteByteZeroPageX(zpa, data)
+		c.Registers.P.Update(data)
+	case ABSOLUTE:
+		return errUnsupportedMode
+	case ABSOLUTE_X:
+		return errUnsupportedMode
+	default:
+		return errUnsupportedMode
+	}
+
+	return nil
 }
 
 // Return from Subroutine
