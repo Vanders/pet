@@ -182,8 +182,8 @@ func (c *CPU) op_bit(i Instruction) error {
 	}
 
 	c.Registers.P.SetZero(c.Registers.A.Get()&data == 0)
-	c.Registers.P.SetOverflow(data&BIT_6 == 0)
-	c.Registers.P.SetNegative(data&BIT_7 == 0)
+	c.Registers.P.SetOverflow(data&BIT_6 != 0)
+	c.Registers.P.SetNegative(data&BIT_7 != 0)
 
 	return nil
 }
