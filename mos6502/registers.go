@@ -66,6 +66,28 @@ func (f *Flags) Reset() {
 	f.I = true
 }
 
+const (
+	BIT_0 = 1 << 0
+	BIT_1 = 1 << 1
+	BIT_2 = 1 << 2
+	BIT_3 = 1 << 3
+	BIT_4 = 1 << 4
+	BIT_5 = 1 << 5
+	BIT_6 = 1 << 6
+	BIT_7 = 1 << 7
+)
+
+// Update sets the appropriate flags
+func (f *Flags) Update(data Byte) {
+	f.Z = (data == 0)
+	f.N = (data&BIT_7 != 0)
+}
+
+// SetCarry sets or clears the carry flag
+func (f *Flags) SetCarry(b bool) {
+	f.C = b
+}
+
 func (f Flags) String() string {
 	return fmt.Sprintf("\tC: %t\n\tZ: %t\n\tI: %t\n\tD: %t\n\tB: %t\n\tV: %t\n\tN: %t",
 		f.C,
