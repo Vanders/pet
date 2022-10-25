@@ -407,8 +407,36 @@ func (c *CPU) op_cpx(i Instruction) error {
 func (c *CPU) op_cpy(i Instruction) error {
 	return errUnimplemented
 }
+
+// Decrement Memory by One
 func (c *CPU) op_dec(i Instruction) error {
-	return errUnimplemented
+
+	switch i.Mode {
+	case ZERO_PAGE:
+		zpa := c.FetchByte()
+		data := c.ReadByte(Word(zpa))
+
+		data -= 1
+
+		c.WriteByteZeroPage(zpa, data)
+		c.Registers.P.Update(data)
+	case ZERO_PAGE_X:
+		zpa := c.FetchByte()
+		data := c.ReadByte(Word(zpa))
+
+		data -= 1
+
+		c.WriteByteZeroPageX(zpa, data)
+		c.Registers.P.Update(data)
+	case ABSOLUTE:
+		return errUnsupportedMode
+	case ABSOLUTE_X:
+		return errUnsupportedMode
+	default:
+		return errUnsupportedMode
+	}
+
+	return nil
 }
 
 // Decrement Index X by One
