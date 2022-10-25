@@ -126,10 +126,6 @@ func (c *CPU) op_php(i Instruction) error {
 	return errUnimplemented
 }
 
-func (c *CPU) op_clc(i Instruction) error {
-	return errUnimplemented
-}
-
 func (c *CPU) op_jsr(i Instruction) error {
 	addr := c.FetchWord()
 	c.PushWord(c.PC.Get() - 1)
@@ -176,9 +172,6 @@ func (c *CPU) op_pha(i Instruction) error {
 	return errUnimplemented
 }
 func (c *CPU) op_jmp(i Instruction) error {
-	return errUnimplemented
-}
-func (c *CPU) op_cli(i Instruction) error {
 	return errUnimplemented
 }
 func (c *CPU) op_adc(i Instruction) error {
@@ -306,6 +299,20 @@ func (c *CPU) op_cmp(i Instruction) error {
 	c.Registers.P.SetCarry(a >= data)
 	c.Registers.P.SetZero(a == data)
 	c.Registers.P.SetNegative((a-data)&BIT_7 != 0)
+
+	return nil
+}
+
+// Clear Interrupt Disable bit
+func (c *CPU) op_cli(i Instruction) error {
+	c.Registers.P.SetInterrupt(false)
+
+	return nil
+}
+
+// Clear Carry Flag
+func (c *CPU) op_clc(i Instruction) error {
+	c.Registers.P.SetCarry(false)
 
 	return nil
 }

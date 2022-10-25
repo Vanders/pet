@@ -93,6 +93,11 @@ func (f *Flags) SetZero(b bool) {
 	f.Z = b
 }
 
+// SetInterrupt sets or clears the interrupt disable flag
+func (f *Flags) SetInterrupt(b bool) {
+	f.I = b
+}
+
 // SetOverflow sets or clears the overflow flag
 func (f *Flags) SetOverflow(b bool) {
 	f.V = b
