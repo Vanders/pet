@@ -160,6 +160,12 @@ func (c *CPU) PushWord(data Word) {
 	c.Registers.S.Set(c.Registers.S.Get() - 2)
 }
 
+// PopByte reads an 8bit byte from the stack and increments the stack pointer by 1
+func (c *CPU) PopByte() Byte {
+	c.Registers.S.Inc()
+	return c.ReadByte(STACK_BOTTOM + Word(c.Registers.S.Get()))
+}
+
 // PopWord reads a 16bit word from the stack and increments the stack pointer by 2
 func (c *CPU) PopWord() Word {
 	c.Registers.S.Set(c.Registers.S.Get() + 2)

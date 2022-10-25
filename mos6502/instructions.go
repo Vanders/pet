@@ -166,9 +166,16 @@ func (c *CPU) op_pha(i Instruction) error {
 func (c *CPU) op_adc(i Instruction) error {
 	return errUnimplemented
 }
+
+// Pull Accumulator from Stack
 func (c *CPU) op_pla(i Instruction) error {
-	return errUnimplemented
+	data := c.PopByte()
+	c.Registers.A.Set(data)
+	c.Registers.P.Update(data)
+
+	return nil
 }
+
 func (c *CPU) op_ror(i Instruction) error {
 	return errUnimplemented
 }
