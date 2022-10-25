@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"sync"
 
 	"github.com/vanders/pet/mos6502"
 )
@@ -14,6 +15,9 @@ func dumpAndExit(cpu *mos6502.CPU, err error) {
 }
 
 func main() {
+	var wg sync.WaitGroup
+
+	// Initialise memory
 	var mem Memory
 	mem.Reset()
 
@@ -50,10 +54,25 @@ func main() {
 	kernal.Load("roms/kernal-2.901465-03.bin")
 	mem.Map(kernal)
 
+	// Configure keyboard
+	buf := make(chan Key, 1)
+	kbd := Keyboard{
+		Buffer: buf,
+	}
+	kbd.Reset()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		kbd.Scan()
+	}()
+
 	// Create PIAs & VIA
 	var pia *PIA
 
-	pia1 := &PIA1{}
+	pia1 := &PIA1{
+		KbdBuffer: buf,
+	}
 	pia = &PIA{
 		Base: 0xe810,
 	}
@@ -83,25 +102,35 @@ func main() {
 	}
 	cpu.Reset()
 
-	// Execute as many instructions as possible
-	for {
-		err := cpu.Step()
-		if err != nil {
-			dumpAndExit(&cpu, fmt.Errorf("\nexecution stopped: %s", err))
-		}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
 
-		// Check devices for interrupts
-		for _, d := range mem.Devices {
-			if d.CheckInterrupt() {
-				cpu.Interrupt()
+		// Execute as many instructions as possible
+		for {
+			err := cpu.Step()
+			if err != nil {
+				dumpAndExit(&cpu, fmt.Errorf("\nexecution stopped: %s", err))
+			}
+
+			// Check devices for interrupts
+			for _, d := range mem.Devices {
+				if d.CheckInterrupt() {
+					cpu.Interrupt()
+				}
 			}
 		}
-	}
+	}()
+
+	wg.Wait()
 }
 
 // Pheripheral Interface Adaptor #1
 type PIA1 struct {
 	ports [4]mos6502.Byte // 4 8bit ports
+
+	KbdBuffer chan (Key) // Keyboard "buffer"
+	key       Key        // Last keypress
 }
 
 func (p *PIA1) PortRead(port int) mos6502.Byte {
@@ -115,6 +144,22 @@ func (p *PIA1) PortRead(port int) mos6502.Byte {
 		K=Keyboard Row select
 		*/
 		return p.ports[port] | mos6502.BIT_7 // Diagnostic Sense is always high
+	case 2:
+		// KKKKKKKK	K=Keyboard Row Input
+		// get keyboard scan row (bits 0-3)
+		row := p.ports[0] & 0x0f
+		// startup can sometimes set the row to 0x0f
+		if row > 9 {
+			return mos6502.Byte(0xff)
+		}
+		// does the row being scanned have a keypress?
+		if row == mos6502.Byte(p.key.row) {
+			// return the key bit
+			return mos6502.Byte(0xff - (0x01 << p.key.bit))
+		} else {
+			// nothing here
+			return mos6502.Byte(0xff)
+		}
 	}
 	return p.ports[port]
 }
@@ -124,7 +169,14 @@ func (p *PIA1) PortWrite(port int, data mos6502.Byte) {
 }
 
 func (p *PIA1) IRQ() bool {
-	return false
+	select {
+	case key := <-p.KbdBuffer:
+		// got a key
+		p.key = key
+		return true
+	default:
+		return false
+	}
 }
 
 // Pheripheral Interface Adaptor #2
