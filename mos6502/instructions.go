@@ -15,6 +15,7 @@ func (c *CPU) op_brk(i Instruction) error {
 func (c *CPU) op_ora(i Instruction) error {
 	return errUnimplemented
 }
+
 func (c *CPU) op_asl(i Instruction) error {
 	carryAndShift := func(data Byte) Byte {
 		c.Registers.P.SetCarry(data&BIT_7 != 0)
@@ -55,9 +56,11 @@ func (c *CPU) op_asl(i Instruction) error {
 
 	return nil
 }
+
 func (c *CPU) op_php(i Instruction) error {
 	return errUnimplemented
 }
+
 func (c *CPU) op_bpl(i Instruction) error {
 	switch i.Mode {
 	case RELATIVE:
@@ -75,9 +78,11 @@ func (c *CPU) op_bpl(i Instruction) error {
 
 	return nil
 }
+
 func (c *CPU) op_clc(i Instruction) error {
 	return errUnimplemented
 }
+
 func (c *CPU) op_jsr(i Instruction) error {
 	addr := c.FetchWord()
 	c.PushWord(c.PC.Get() - 1)
@@ -85,9 +90,20 @@ func (c *CPU) op_jsr(i Instruction) error {
 
 	return nil
 }
+
 func (c *CPU) op_bit(i Instruction) error {
-	return errUnimplemented
+	data, err := c.FetchByteMode(i.Mode)
+	if err != nil {
+		return err
+	}
+
+	c.Registers.P.Z = (c.Registers.A.Get()&data == 0)
+	c.Registers.P.V = (data&BIT_6 == 0)
+	c.Registers.P.N = (data&BIT_7 == 0)
+
+	return nil
 }
+
 func (c *CPU) op_rol(i Instruction) error {
 	return errUnimplemented
 }
@@ -136,9 +152,7 @@ func (c *CPU) op_bvs(i Instruction) error {
 func (c *CPU) op_sei(i Instruction) error {
 	return errUnimplemented
 }
-func (c *CPU) op_sty(i Instruction) error {
-	return errUnimplemented
-}
+
 func (c *CPU) op_sta(i Instruction) error {
 	data := c.Registers.A.Get()
 
@@ -169,9 +183,43 @@ func (c *CPU) op_sta(i Instruction) error {
 	}
 	return nil
 }
+
 func (c *CPU) op_stx(i Instruction) error {
-	return errUnimplemented
+	data := c.Registers.X.Get()
+	switch i.Mode {
+	case ABSOLUTE:
+		addr := c.FetchWord()
+		c.WriteByte(addr, data)
+	case ZERO_PAGE:
+		zpa := c.FetchByte()
+		c.WriteByteZeroPage(zpa, data)
+	case ZERO_PAGE_X:
+		zpa := c.FetchByte()
+		c.WriteByteZeroPageX(zpa, data)
+	default:
+		return errUnsupportedMode
+	}
+	return nil
 }
+
+func (c *CPU) op_sty(i Instruction) error {
+	data := c.Registers.Y.Get()
+	switch i.Mode {
+	case ABSOLUTE:
+		addr := c.FetchWord()
+		c.WriteByte(addr, data)
+	case ZERO_PAGE:
+		zpa := c.FetchByte()
+		c.WriteByteZeroPage(zpa, data)
+	case ZERO_PAGE_X:
+		zpa := c.FetchByte()
+		c.WriteByteZeroPageX(zpa, data)
+	default:
+		return errUnsupportedMode
+	}
+	return nil
+}
+
 func (c *CPU) op_dey(i Instruction) error {
 	return errUnimplemented
 }
@@ -192,28 +240,38 @@ func (c *CPU) op_txs(i Instruction) error {
 
 	return nil
 }
+
 func (c *CPU) op_ldy(i Instruction) error {
-	return errUnimplemented
+	data, err := c.FetchByteMode(i.Mode)
+	if err != nil {
+		return err
+	}
+	c.Registers.Y.Set(data)
+
+	return nil
 }
+
 func (c *CPU) op_ldx(i Instruction) error {
-	b, err := c.FetchByteMode(i.Mode)
+	data, err := c.FetchByteMode(i.Mode)
 	if err != nil {
 		return err
 	}
-	c.Registers.X.Set(b)
+	c.Registers.X.Set(data)
 
 	return nil
 }
+
 func (c *CPU) op_lda(i Instruction) error {
-	b, err := c.FetchByteMode(i.Mode)
+	data, err := c.FetchByteMode(i.Mode)
 	if err != nil {
 		return err
 	}
-	c.Registers.A.Set(b)
-	c.Registers.P.Update(b)
+	c.Registers.A.Set(data)
+	c.Registers.P.Update(data)
 
 	return nil
 }
+
 func (c *CPU) op_tay(i Instruction) error {
 	return errUnimplemented
 }
@@ -238,20 +296,24 @@ func (c *CPU) op_iny(i Instruction) error {
 func (c *CPU) op_cmp(i Instruction) error {
 	return errUnimplemented
 }
+
 func (c *CPU) op_dex(i Instruction) error {
 	c.Registers.X.Dec()
 	c.Registers.P.Update(c.Registers.X.Get())
 
 	return nil
 }
+
 func (c *CPU) op_bne(i Instruction) error {
 	return errUnimplemented
 }
+
 func (c *CPU) op_cld(i Instruction) error {
 	c.Registers.P.D = false
 
 	return nil
 }
+
 func (c *CPU) op_cpx(i Instruction) error {
 	return errUnimplemented
 }
