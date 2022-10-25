@@ -9,6 +9,44 @@ var (
 	errUnsupportedMode = errors.New("unknown or unsupported addressing mode")
 )
 
+// Add Memory to Accumulator with Carry
+func (c *CPU) op_adc(i Instruction) error {
+	data, err := c.FetchByteMode(i.Mode)
+	if err != nil {
+		return err
+	}
+
+	var res Word
+
+	a := c.Registers.A.Get()
+	sameSign := (data & BIT_7) == (a & BIT_7)
+
+	// add A to memory, plus 1 for the carry flag (if set)
+	res = Word(a) + Word(data)
+	if c.Registers.P.C == true {
+		res += 1
+	}
+
+	// if the inputs were the same sign check for overflow
+	if sameSign {
+		// does the result sign match the input sign? if not we overflowed
+		c.Registers.P.SetOverflow((data & BIT_7) != (a & BIT_7))
+	} else {
+		c.Registers.P.SetOverflow(false)
+	}
+
+	// update accumulator
+	a = Byte(res & 0xff)
+	c.Registers.A.Set(a)
+
+	// check overflow & set carry flag if needed
+	c.Registers.P.SetCarry(res > 0xff)
+
+	c.Registers.P.Update(a)
+
+	return nil
+}
+
 // Shift Left One Bit (Memory or Accumulator)
 func (c *CPU) op_asl(i Instruction) error {
 	carryAndShift := func(data Byte) Byte {
@@ -161,9 +199,6 @@ func (c *CPU) op_lsr(i Instruction) error {
 	return errUnimplemented
 }
 func (c *CPU) op_pha(i Instruction) error {
-	return errUnimplemented
-}
-func (c *CPU) op_adc(i Instruction) error {
 	return errUnimplemented
 }
 
