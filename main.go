@@ -85,7 +85,7 @@ func main() {
 	for {
 		err := cpu.Step()
 		if err != nil {
-			dumpAndExit(&cpu, fmt.Errorf("execution stopped: %s", err))
+			dumpAndExit(&cpu, fmt.Errorf("\nexecution stopped: %s", err))
 		}
 	}
 }
