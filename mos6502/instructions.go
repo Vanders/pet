@@ -51,15 +51,30 @@ func (c *CPU) op_asl(i Instruction) error {
 	return nil
 }
 
+// Set PC to the relative branch address
+func (c *CPU) op_branch_relative(addr Byte) {
+	if addr < 128 {
+		c.PC.Set(c.PC.Get() + Word(addr))
+	} else {
+		c.PC.Set(c.PC.Get() + Word(int(addr)-256))
+	}
+}
+
+// Branch on Carry Clear
+func (c *CPU) op_bcc(i Instruction) error {
+	addr := c.FetchByte()
+	if c.Registers.P.C == true {
+		c.op_branch_relative(addr)
+	}
+
+	return nil
+}
+
 // Branch on Result Zero
 func (c *CPU) op_beq(i Instruction) error {
 	addr := c.FetchByte()
 	if c.Registers.P.Z == true {
-		if addr < 128 {
-			c.PC.Set(c.PC.Get() + Word(addr))
-		} else {
-			c.PC.Set(c.PC.Get() + Word(int(addr)-256))
-		}
+		c.op_branch_relative(addr)
 	}
 
 	return nil
@@ -69,11 +84,7 @@ func (c *CPU) op_beq(i Instruction) error {
 func (c *CPU) op_bne(i Instruction) error {
 	addr := c.FetchByte()
 	if c.Registers.P.Z == false {
-		if addr < 128 {
-			c.PC.Set(c.PC.Get() + Word(addr))
-		} else {
-			c.PC.Set(c.PC.Get() + Word(int(addr)-256))
-		}
+		c.op_branch_relative(addr)
 	}
 
 	return nil
@@ -83,11 +94,7 @@ func (c *CPU) op_bne(i Instruction) error {
 func (c *CPU) op_bmi(i Instruction) error {
 	addr := c.FetchByte()
 	if c.Registers.P.N == true {
-		if addr < 128 {
-			c.PC.Set(c.PC.Get() + Word(addr))
-		} else {
-			c.PC.Set(c.PC.Get() + Word(int(addr)-256))
-		}
+		c.op_branch_relative(addr)
 	}
 
 	return nil
@@ -97,11 +104,7 @@ func (c *CPU) op_bmi(i Instruction) error {
 func (c *CPU) op_bpl(i Instruction) error {
 	addr := c.FetchByte()
 	if c.Registers.P.N == false {
-		if addr < 128 {
-			c.PC.Set(c.PC.Get() + Word(addr))
-		} else {
-			c.PC.Set(c.PC.Get() + Word(int(addr)-256))
-		}
+		c.op_branch_relative(addr)
 	}
 
 	return nil
@@ -257,9 +260,6 @@ func (c *CPU) op_ror(i Instruction) error {
 	return errUnimplemented
 }
 func (c *CPU) op_txa(i Instruction) error {
-	return errUnimplemented
-}
-func (c *CPU) op_bcc(i Instruction) error {
 	return errUnimplemented
 }
 func (c *CPU) op_tya(i Instruction) error {
