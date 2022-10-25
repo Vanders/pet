@@ -47,6 +47,15 @@ func (c *CPU) op_adc(i Instruction) error {
 	return nil
 }
 
+// AND Memory with Accumulator
+func (c *CPU) op_and(i Instruction) error {
+	data := c.FetchByteImmediate()
+	a := c.Registers.A.Get() & data
+	c.Registers.A.Set(a)
+
+	return nil
+}
+
 // Shift Left One Bit (Memory or Accumulator)
 func (c *CPU) op_asl(i Instruction) error {
 	carryAndShift := func(data Byte) Byte {
@@ -181,9 +190,6 @@ func (c *CPU) op_rol(i Instruction) error {
 	return errUnimplemented
 }
 func (c *CPU) op_plp(i Instruction) error {
-	return errUnimplemented
-}
-func (c *CPU) op_and(i Instruction) error {
 	return errUnimplemented
 }
 func (c *CPU) op_rti(i Instruction) error {
