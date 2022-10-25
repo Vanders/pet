@@ -297,26 +297,56 @@ func (c *CPU) op_sty(i Instruction) error {
 	return nil
 }
 
-func (c *CPU) op_txa(i Instruction) error {
-	return errUnimplemented
+// Transfer Accumulator to Index X
+func (c *CPU) op_tax(i Instruction) error {
+	a := c.Registers.A.Get()
+	c.Registers.X.Set(a)
+	c.Registers.P.Update(a)
+
+	return nil
 }
-func (c *CPU) op_tya(i Instruction) error {
-	return errUnimplemented
+
+// Transfer Accumulator to Index Y
+func (c *CPU) op_tay(i Instruction) error {
+	a := c.Registers.A.Get()
+	c.Registers.Y.Set(a)
+	c.Registers.P.Update(a)
+
+	return nil
 }
+
+// Transfer Stack Pointer to Index X
+func (c *CPU) op_tsx(i Instruction) error {
+	s := c.Registers.S.Get()
+	c.Registers.X.Set(s)
+	c.Registers.P.Update(s)
+
+	return nil
+}
+
+// Transfer Index X to Stack Pointer
 func (c *CPU) op_txs(i Instruction) error {
 	c.Registers.S.Set(c.Registers.X.Get())
 
 	return nil
 }
 
-func (c *CPU) op_tay(i Instruction) error {
-	return errUnimplemented
+// Transfer Index X to Accumulator
+func (c *CPU) op_txa(i Instruction) error {
+	x := c.Registers.X.Get()
+	c.Registers.A.Set(x)
+	c.Registers.P.Update(x)
+
+	return nil
 }
-func (c *CPU) op_tax(i Instruction) error {
-	return errUnimplemented
-}
-func (c *CPU) op_tsx(i Instruction) error {
-	return errUnimplemented
+
+// Transfer Index Y to Accumulator
+func (c *CPU) op_tya(i Instruction) error {
+	y := c.Registers.Y.Get()
+	c.Registers.A.Set(y)
+	c.Registers.P.Update(y)
+
+	return nil
 }
 
 // Compare Memory with Accumulator
