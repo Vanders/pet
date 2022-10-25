@@ -9,6 +9,48 @@ var (
 	errUnsupportedMode = errors.New("unknown or unsupported addressing mode")
 )
 
+// Branch on Result Zero
+func (c *CPU) op_beq(i Instruction) error {
+	addr := c.FetchByte()
+	if c.Registers.P.Z == true {
+		if addr < 128 {
+			c.PC.Set(c.PC.Get() + Word(addr))
+		} else {
+			c.PC.Set(c.PC.Get() + Word(int(addr)-256))
+		}
+	}
+
+	return nil
+}
+
+// Branch on Result not Zero
+func (c *CPU) op_bne(i Instruction) error {
+	addr := c.FetchByte()
+	if c.Registers.P.Z == false {
+		if addr < 128 {
+			c.PC.Set(c.PC.Get() + Word(addr))
+		} else {
+			c.PC.Set(c.PC.Get() + Word(int(addr)-256))
+		}
+	}
+
+	return nil
+}
+
+// Branch on Result Plus (Positive)
+func (c *CPU) op_bpl(i Instruction) error {
+	addr := c.FetchByte()
+	if c.Registers.P.N == false {
+		if addr < 128 {
+			c.PC.Set(c.PC.Get() + Word(addr))
+		} else {
+			c.PC.Set(c.PC.Get() + Word(int(addr)-256))
+		}
+	}
+
+	return nil
+}
+
 func (c *CPU) op_brk(i Instruction) error {
 	return errUnimplemented
 }
@@ -59,24 +101,6 @@ func (c *CPU) op_asl(i Instruction) error {
 
 func (c *CPU) op_php(i Instruction) error {
 	return errUnimplemented
-}
-
-func (c *CPU) op_bpl(i Instruction) error {
-	switch i.Mode {
-	case RELATIVE:
-		addr := c.FetchByte()
-		if c.Registers.P.N == false {
-			if addr < 128 {
-				c.PC.Set(c.PC.Get() + Word(addr))
-			} else {
-				c.PC.Set(c.PC.Get() + Word(int(addr)-256))
-			}
-		}
-	default:
-		return errUnsupportedMode
-	}
-
-	return nil
 }
 
 func (c *CPU) op_clc(i Instruction) error {
@@ -304,10 +328,6 @@ func (c *CPU) op_dex(i Instruction) error {
 	return nil
 }
 
-func (c *CPU) op_bne(i Instruction) error {
-	return errUnimplemented
-}
-
 func (c *CPU) op_cld(i Instruction) error {
 	c.Registers.P.D = false
 
@@ -338,8 +358,5 @@ func (c *CPU) op_inx(i Instruction) error {
 	return errUnimplemented
 }
 func (c *CPU) op_nop(i Instruction) error {
-	return errUnimplemented
-}
-func (c *CPU) op_beq(i Instruction) error {
 	return errUnimplemented
 }
