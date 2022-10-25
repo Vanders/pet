@@ -88,6 +88,28 @@ func (c *CPU) FetchWord() Word {
 	return w
 }
 
+// FetchWordMode forwards the Fetch to the appropriate function for the given addressing mode
+func (c *CPU) FetchWordMode(m AddrMode) (Word, error) {
+	switch m {
+	case ABSOLUTE:
+		return c.FetchWordAbsolute(), nil
+	case INDIRECT:
+		return c.FetchWordIndirect(), nil
+	default:
+		return Word(0), errors.New("unknown or unsupported addressing mode")
+	}
+}
+
+func (c *CPU) FetchWordAbsolute() Word {
+	return c.FetchWord()
+}
+
+func (c *CPU) FetchWordIndirect() Word {
+	zpa := c.FetchByte()
+	addr := c.ReadWord(Word(zpa))
+	return c.ReadWord(addr)
+}
+
 // WriteByte writes a single byte to the given address
 func (c *CPU) WriteByte(address Word, data Byte) {
 	c.Write(address, data)

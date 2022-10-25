@@ -126,14 +126,6 @@ func (c *CPU) op_php(i Instruction) error {
 	return errUnimplemented
 }
 
-func (c *CPU) op_jsr(i Instruction) error {
-	addr := c.FetchWord()
-	c.PushWord(c.PC.Get() - 1)
-	c.PC.Set(addr)
-
-	return nil
-}
-
 func (c *CPU) op_bit(i Instruction) error {
 	data, err := c.FetchByteMode(i.Mode)
 	if err != nil {
@@ -169,9 +161,6 @@ func (c *CPU) op_lsr(i Instruction) error {
 	return errUnimplemented
 }
 func (c *CPU) op_pha(i Instruction) error {
-	return errUnimplemented
-}
-func (c *CPU) op_jmp(i Instruction) error {
 	return errUnimplemented
 }
 func (c *CPU) op_adc(i Instruction) error {
@@ -378,6 +367,26 @@ func (c *CPU) op_inx(i Instruction) error {
 func (c *CPU) op_iny(i Instruction) error {
 	c.Registers.Y.Inc()
 	c.Registers.P.Update(c.Registers.Y.Get())
+
+	return nil
+}
+
+// Jump to New Location
+func (c *CPU) op_jmp(i Instruction) error {
+	addr, err := c.FetchWordMode(i.Mode)
+	if err != nil {
+		return err
+	}
+	c.PC.Set(addr)
+
+	return nil
+}
+
+// Jump to New Location Saving Return Address
+func (c *CPU) op_jsr(i Instruction) error {
+	addr := c.FetchWord()
+	c.PushWord(c.PC.Get() - 1)
+	c.PC.Set(addr)
 
 	return nil
 }
