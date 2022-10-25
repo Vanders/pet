@@ -18,6 +18,7 @@ type CPU struct {
 
 	instructionSet map[Opcode]Instruction // Table of opcodes
 	insCount       int                    // Number of instructions executed
+	isr            bool                   // Is the CPU running the ISR?
 
 	Read  func(address Word) Byte        // Read a single byte from the bus
 	Write func(address Word, value Byte) // Write a single byte to the bus
@@ -94,11 +95,11 @@ func (c *CPU) Step() error {
 	// Disasemble & log
 	switch ins.Bytes {
 	case 0:
-		c.Log(ins.Format + "\n")
+		c.Log(ins.Format + "\r\n")
 	case 1:
-		c.Log(ins.Format+"\n", c.ReadByte(c.PC.Get()))
+		c.Log(ins.Format+"\r\n", c.ReadByte(c.PC.Get()))
 	case 2:
-		c.Log(ins.Format+"\n", c.ReadWord(c.PC.Get()))
+		c.Log(ins.Format+"\r\n", c.ReadWord(c.PC.Get()))
 	}
 
 	// Call the instruction implementation
@@ -112,8 +113,13 @@ func (c *CPU) Step() error {
 
 // Raise interrupt
 func (c *CPU) Interrupt() {
-	c.PushWord(c.PC.Get() - 1)
-	c.PushByte(c.Registers.P.GetByte())
-	addr := c.ReadWord(VEC_INTERRUPT)
-	c.PC.Set(addr)
+	if c.Registers.P.I == false && c.isr == false {
+		c.isr = true
+
+		c.PushWord(c.PC.Get() - 1)
+		c.PushByte(c.Registers.P.GetByte())
+
+		addr := c.ReadWord(VEC_INTERRUPT)
+		c.PC.Set(addr)
+	}
 }
