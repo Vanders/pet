@@ -28,8 +28,8 @@ func main() {
 	}
 	cpu.Reset()
 
-	// XXX Attempt to execute the 1st 100 instructions
-	for n := 0; n < 100; n++ {
+	// Execute as many instructions as possible
+	for {
 		err := cpu.Step()
 		if err != nil {
 			dumpAndExit(&cpu, fmt.Errorf("execution stopped: %s", err))
