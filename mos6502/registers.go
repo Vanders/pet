@@ -88,6 +88,21 @@ func (f *Flags) SetCarry(b bool) {
 	f.C = b
 }
 
+// SetZero sets or clears the zero flag
+func (f *Flags) SetZero(b bool) {
+	f.Z = b
+}
+
+// SetOverflow sets or clears the overflow flag
+func (f *Flags) SetOverflow(b bool) {
+	f.V = b
+}
+
+// SetNegative sets or clears the negative flag
+func (f *Flags) SetNegative(b bool) {
+	f.N = b
+}
+
 func (f Flags) String() string {
 	return fmt.Sprintf("\tC: %t\n\tZ: %t\n\tI: %t\n\tD: %t\n\tB: %t\n\tV: %t\n\tN: %t",
 		f.C,

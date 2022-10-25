@@ -97,9 +97,9 @@ func (c *CPU) op_bit(i Instruction) error {
 		return err
 	}
 
-	c.Registers.P.Z = (c.Registers.A.Get()&data == 0)
-	c.Registers.P.V = (data&BIT_6 == 0)
-	c.Registers.P.N = (data&BIT_7 == 0)
+	c.Registers.P.SetZero(c.Registers.A.Get()&data == 0)
+	c.Registers.P.SetOverflow(data&BIT_6 == 0)
+	c.Registers.P.SetNegative(data&BIT_7 == 0)
 
 	return nil
 }
@@ -315,8 +315,19 @@ func (c *CPU) op_cld(i Instruction) error {
 }
 
 func (c *CPU) op_cpx(i Instruction) error {
-	return errUnimplemented
+	data, err := c.FetchByteMode(i.Mode)
+	if err != nil {
+		return err
+	}
+	x := c.Registers.X.Get()
+
+	c.Registers.P.SetCarry(x >= data)
+	c.Registers.P.SetZero(x == data)
+	c.Registers.P.SetNegative((x-data)&BIT_7 != 0)
+
+	return nil
 }
+
 func (c *CPU) op_sbc(i Instruction) error {
 	return errUnimplemented
 }
