@@ -22,7 +22,21 @@ func (c *CPU) op_php(i Instruction) error {
 	return errUnimplemented
 }
 func (c *CPU) op_bpl(i Instruction) error {
-	return errUnimplemented
+	switch i.Mode {
+	case RELATIVE:
+		addr := c.FetchByte()
+		if c.Registers.P.N == false {
+			if addr < 128 {
+				c.PC.Set(c.PC.Get() + Word(addr))
+			} else {
+				c.PC.Set(c.PC.Get() + Word(int(addr)-256))
+			}
+		}
+	default:
+		return errUnsupportedMode
+	}
+
+	return nil
 }
 func (c *CPU) op_clc(i Instruction) error {
 	return errUnimplemented
