@@ -79,6 +79,20 @@ func (c *CPU) op_bne(i Instruction) error {
 	return nil
 }
 
+// Branch on Result Minus
+func (c *CPU) op_bmi(i Instruction) error {
+	addr := c.FetchByte()
+	if c.Registers.P.N == true {
+		if addr < 128 {
+			c.PC.Set(c.PC.Get() + Word(addr))
+		} else {
+			c.PC.Set(c.PC.Get() + Word(int(addr)-256))
+		}
+	}
+
+	return nil
+}
+
 // Branch on Result Plus (Positive)
 func (c *CPU) op_bpl(i Instruction) error {
 	addr := c.FetchByte()
@@ -133,9 +147,6 @@ func (c *CPU) op_plp(i Instruction) error {
 	return errUnimplemented
 }
 func (c *CPU) op_and(i Instruction) error {
-	return errUnimplemented
-}
-func (c *CPU) op_bmi(i Instruction) error {
 	return errUnimplemented
 }
 func (c *CPU) op_sec(i Instruction) error {
@@ -292,10 +303,23 @@ func (c *CPU) op_bcs(i Instruction) error {
 func (c *CPU) op_tsx(i Instruction) error {
 	return errUnimplemented
 }
+
+// Compare Memory with Accumulator
 func (c *CPU) op_cmp(i Instruction) error {
-	return errUnimplemented
+	data, err := c.FetchByteMode(i.Mode)
+	if err != nil {
+		return err
+	}
+	a := c.Registers.A.Get()
+
+	c.Registers.P.SetCarry(a >= data)
+	c.Registers.P.SetZero(a == data)
+	c.Registers.P.SetNegative((a-data)&BIT_7 != 0)
+
+	return nil
 }
 
+// Clear Decimal Mode
 func (c *CPU) op_cld(i Instruction) error {
 	c.Registers.P.D = false
 
