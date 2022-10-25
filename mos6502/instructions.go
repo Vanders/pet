@@ -9,6 +9,48 @@ var (
 	errUnsupportedMode = errors.New("unknown or unsupported addressing mode")
 )
 
+// Shift Left One Bit (Memory or Accumulator)
+func (c *CPU) op_asl(i Instruction) error {
+	carryAndShift := func(data Byte) Byte {
+		c.Registers.P.SetCarry(data&BIT_7 != 0)
+		return (data << 1) & 0xfe
+	}
+
+	switch i.Mode {
+	case ACCUMULATOR:
+		data := c.Registers.A.Get()
+
+		data = carryAndShift(data)
+
+		c.Registers.A.Set(data)
+		c.Registers.P.Update(data)
+	case ZERO_PAGE:
+		zpa := c.FetchByte()
+		data := c.ReadByte(Word(zpa))
+
+		data = carryAndShift(data)
+
+		c.WriteByteZeroPage(zpa, data)
+		c.Registers.P.Update(data)
+	case ZERO_PAGE_X:
+		zpa := c.FetchByte()
+		data := c.ReadByte(Word(zpa))
+
+		data = carryAndShift(data)
+
+		c.WriteByteZeroPageX(zpa, data)
+		c.Registers.P.Update(data)
+	case ABSOLUTE:
+		return errUnsupportedMode
+	case ABSOLUTE_X:
+		return errUnsupportedMode
+	default:
+		return errUnsupportedMode
+	}
+
+	return nil
+}
+
 // Branch on Result Zero
 func (c *CPU) op_beq(i Instruction) error {
 	addr := c.FetchByte()
@@ -53,50 +95,6 @@ func (c *CPU) op_bpl(i Instruction) error {
 
 func (c *CPU) op_brk(i Instruction) error {
 	return errUnimplemented
-}
-func (c *CPU) op_ora(i Instruction) error {
-	return errUnimplemented
-}
-
-func (c *CPU) op_asl(i Instruction) error {
-	carryAndShift := func(data Byte) Byte {
-		c.Registers.P.SetCarry(data&BIT_7 != 0)
-		return (data << 1) & 0xfe
-	}
-
-	switch i.Mode {
-	case ACCUMULATOR:
-		data := c.Registers.A.Get()
-
-		data = carryAndShift(data)
-
-		c.Registers.A.Set(data)
-		c.Registers.P.Update(data)
-	case ZERO_PAGE:
-		zpa := c.FetchByte()
-		data := c.ReadByte(Word(zpa))
-
-		data = carryAndShift(data)
-
-		c.WriteByteZeroPage(zpa, data)
-		c.Registers.P.Update(data)
-	case ZERO_PAGE_X:
-		zpa := c.FetchByte()
-		data := c.ReadByte(Word(zpa))
-
-		data = carryAndShift(data)
-
-		c.WriteByteZeroPageX(zpa, data)
-		c.Registers.P.Update(data)
-	case ABSOLUTE:
-		return errUnsupportedMode
-	case ABSOLUTE_X:
-		return errUnsupportedMode
-	default:
-		return errUnsupportedMode
-	}
-
-	return nil
 }
 
 func (c *CPU) op_php(i Instruction) error {
@@ -282,17 +280,6 @@ func (c *CPU) op_ldx(i Instruction) error {
 	return nil
 }
 
-func (c *CPU) op_lda(i Instruction) error {
-	data, err := c.FetchByteMode(i.Mode)
-	if err != nil {
-		return err
-	}
-	c.Registers.A.Set(data)
-	c.Registers.P.Update(data)
-
-	return nil
-}
-
 func (c *CPU) op_tay(i Instruction) error {
 	return errUnimplemented
 }
@@ -305,12 +292,6 @@ func (c *CPU) op_bcs(i Instruction) error {
 func (c *CPU) op_tsx(i Instruction) error {
 	return errUnimplemented
 }
-func (c *CPU) op_dec(i Instruction) error {
-	return errUnimplemented
-}
-func (c *CPU) op_cpy(i Instruction) error {
-	return errUnimplemented
-}
 func (c *CPU) op_cmp(i Instruction) error {
 	return errUnimplemented
 }
@@ -321,6 +302,7 @@ func (c *CPU) op_cld(i Instruction) error {
 	return nil
 }
 
+// Compare Memory and Index X
 func (c *CPU) op_cpx(i Instruction) error {
 	data, err := c.FetchByteMode(i.Mode)
 	if err != nil {
@@ -333,6 +315,13 @@ func (c *CPU) op_cpx(i Instruction) error {
 	c.Registers.P.SetNegative((x-data)&BIT_7 != 0)
 
 	return nil
+}
+
+func (c *CPU) op_cpy(i Instruction) error {
+	return errUnimplemented
+}
+func (c *CPU) op_dec(i Instruction) error {
+	return errUnimplemented
 }
 
 // Decrement Index X by One
@@ -371,8 +360,35 @@ func (c *CPU) op_iny(i Instruction) error {
 	return nil
 }
 
+// Load Accumulator with Memory
+func (c *CPU) op_lda(i Instruction) error {
+	data, err := c.FetchByteMode(i.Mode)
+	if err != nil {
+		return err
+	}
+	c.Registers.A.Set(data)
+	c.Registers.P.Update(data)
+
+	return nil
+}
+
 func (c *CPU) op_nop(i Instruction) error {
 	return errUnimplemented
+}
+
+// OR Memory with Accumulator
+func (c *CPU) op_ora(i Instruction) error {
+	data, err := c.FetchByteMode(i.Mode)
+	if err != nil {
+		return err
+	}
+
+	a := c.Registers.A.Get()
+	a |= data
+	c.Registers.A.Set(a)
+	c.Registers.P.Update(a)
+
+	return nil
 }
 
 func (c *CPU) op_sbc(i Instruction) error {
