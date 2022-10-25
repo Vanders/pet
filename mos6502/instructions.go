@@ -244,9 +244,6 @@ func (c *CPU) op_sty(i Instruction) error {
 	return nil
 }
 
-func (c *CPU) op_dey(i Instruction) error {
-	return errUnimplemented
-}
 func (c *CPU) op_ror(i Instruction) error {
 	return errUnimplemented
 }
@@ -314,18 +311,8 @@ func (c *CPU) op_dec(i Instruction) error {
 func (c *CPU) op_cpy(i Instruction) error {
 	return errUnimplemented
 }
-func (c *CPU) op_iny(i Instruction) error {
-	return errUnimplemented
-}
 func (c *CPU) op_cmp(i Instruction) error {
 	return errUnimplemented
-}
-
-func (c *CPU) op_dex(i Instruction) error {
-	c.Registers.X.Dec()
-	c.Registers.P.Update(c.Registers.X.Get())
-
-	return nil
 }
 
 func (c *CPU) op_cld(i Instruction) error {
@@ -348,15 +335,46 @@ func (c *CPU) op_cpx(i Instruction) error {
 	return nil
 }
 
-func (c *CPU) op_sbc(i Instruction) error {
-	return errUnimplemented
+// Decrement Index X by One
+func (c *CPU) op_dex(i Instruction) error {
+	c.Registers.X.Dec()
+	c.Registers.P.Update(c.Registers.X.Get())
+
+	return nil
 }
+
+// Decrement Index Y by One
+func (c *CPU) op_dey(i Instruction) error {
+	c.Registers.Y.Dec()
+	c.Registers.P.Update(c.Registers.Y.Get())
+
+	return nil
+}
+
 func (c *CPU) op_inc(i Instruction) error {
 	return errUnimplemented
 }
+
+// Increment Index X by One
 func (c *CPU) op_inx(i Instruction) error {
+	c.Registers.X.Inc()
+	c.Registers.P.Update(c.Registers.X.Get())
+
+	return nil
+}
+
+// Increment Index Y by One
+func (c *CPU) op_iny(i Instruction) error {
+	c.Registers.Y.Inc()
+	c.Registers.P.Update(c.Registers.Y.Get())
+
+	return nil
+}
+
+func (c *CPU) op_nop(i Instruction) error {
 	return errUnimplemented
 }
-func (c *CPU) op_nop(i Instruction) error {
+
+func (c *CPU) op_sbc(i Instruction) error {
 	return errUnimplemented
 }
