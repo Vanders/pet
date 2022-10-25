@@ -192,9 +192,6 @@ func (c *CPU) op_rti(i Instruction) error {
 func (c *CPU) op_eor(i Instruction) error {
 	return errUnimplemented
 }
-func (c *CPU) op_lsr(i Instruction) error {
-	return errUnimplemented
-}
 
 // Push Accumulator
 func (c *CPU) op_pha(i Instruction) error {
@@ -500,6 +497,48 @@ func (c *CPU) op_ldy(i Instruction) error {
 		return err
 	}
 	c.Registers.Y.Set(data)
+
+	return nil
+}
+
+// Shift One Bit Right (Memory or Accumulator)
+func (c *CPU) op_lsr(i Instruction) error {
+	carryAndShift := func(data Byte) Byte {
+		c.Registers.P.SetCarry(data&BIT_0 != 0)
+		return (data >> 1) & 0x7f
+	}
+
+	switch i.Mode {
+	case ACCUMULATOR:
+		data := c.Registers.A.Get()
+
+		data = carryAndShift(data)
+
+		c.Registers.A.Set(data)
+		c.Registers.P.Update(data)
+	case ZERO_PAGE:
+		zpa := c.FetchByte()
+		data := c.ReadByte(Word(zpa))
+
+		data = carryAndShift(data)
+
+		c.WriteByteZeroPage(zpa, data)
+		c.Registers.P.Update(data)
+	case ZERO_PAGE_X:
+		zpa := c.FetchByte()
+		data := c.ReadByte(Word(zpa))
+
+		data = carryAndShift(data)
+
+		c.WriteByteZeroPageX(zpa, data)
+		c.Registers.P.Update(data)
+	case ABSOLUTE:
+		return errUnsupportedMode
+	case ABSOLUTE_X:
+		return errUnsupportedMode
+	default:
+		return errUnsupportedMode
+	}
 
 	return nil
 }
