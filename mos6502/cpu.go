@@ -13,16 +13,17 @@ type ReadWriter interface {
 
 type CPU struct {
 	Registers struct {
-		A WordRegister // Accumulater
-		X WordRegister // X index
-		Y WordRegister // Y index
+		A ByteRegister // Accumulater
+		X ByteRegister // X index
+		Y ByteRegister // Y index
 		S ByteRegister // Stack pointer
 		P Flags        // Processer state
 	}
 	PC WordRegister // Program Counter
 	IR ByteRegister // Current instruction
 
-	insCount int // Number of instructions executed
+	instructionSet map[Opcode]Instruction // Table of opcodes
+	insCount       int                    // Number of instructions executed
 
 	Read  func(address Word) Byte        // Read a single byte from the bus
 	Write func(address Word, value Byte) // Write a single byte to the bus
@@ -39,20 +40,18 @@ const (
 )
 
 // Log writes a formatted sting to the configured output
-func (c *CPU) Log(format string, a ...interface{}) (int, error) {
+func (c *CPU) Log(format string, a ...any) (int, error) {
 	return fmt.Fprintf(c.Writer, format, a...)
 }
 
-// ReadByte reads a single 8bit byte
-func (c *CPU) ReadByte(address Word) Byte {
-	return c.Read(address)
-}
-
-// ReadWord reads a 16bit word using 2 8bit reads
-func (c *CPU) ReadWord(address Word) Word {
-	lo := c.Read(address)
-	hi := c.Read(address + 1)
-	return Word(hi)<<8 | Word(lo)
+func (c *CPU) Dump() {
+	c.Log("\n\tPC: $%04x\n", c.PC.Get())
+	c.Log("\n\tA: %s\n\tX: %s\n\tY: %s\n\tS: %s\n",
+		c.Registers.A,
+		c.Registers.X,
+		c.Registers.Y,
+		c.Registers.S)
+	c.Log("\nFlags:\n%s\n", c.Registers.P)
 }
 
 // Reset resets the CPU as though RST had been asserted
@@ -70,22 +69,42 @@ func (c *CPU) Reset() {
 	// Clear flags
 	c.Registers.P.Reset()
 
+	// Initialise opcode table
+	c.instructionSet = c.makeInstructionSet()
+
 	// Reset the instruction count
 	c.insCount = 0
 }
 
 // Step fetches & executes a single instruction
-func (c *CPU) Step() {
-	// Read next instruction from & increment PC
+func (c *CPU) Step() error {
+	// Fetch next instruction from PC
+	opcode := c.FetchByte()
+	c.Log("%d:\t0x%.2x:\t0x%.2x:\t", c.insCount, c.PC.Get()-1, opcode)
+	c.IR.Set(opcode)
+
+	// Decode
+	ins, ok := c.instructionSet[Opcode(opcode)]
+	if !ok {
+		return fmt.Errorf("invalid or unknown instruction 0x%2x", opcode)
+	}
 	c.insCount++
 
-	ins := c.ReadByte(c.PC.Get())
-	c.Log("%d:\t0x%.2x:\t0x%.2x\n", c.insCount, c.PC.Get(), ins)
+	// Disasemble & log
+	switch ins.Bytes {
+	case 0:
+		c.Log(ins.Format + "\n")
+	case 1:
+		c.Log(ins.Format+"\n", c.ReadByte(c.PC.Get()))
+	case 2:
+		c.Log(ins.Format+"\n", c.ReadWord(c.PC.Get()))
+	}
 
-	c.IR.Set(ins)
-	c.PC.Inc()
+	// Call the instruction implementation
+	err := ins.F(ins)
+	if err != nil {
+		return err
+	}
 
-	// XXX Decode
-
-	// XXX Disasemble & log
+	return nil
 }
