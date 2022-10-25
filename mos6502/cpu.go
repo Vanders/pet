@@ -76,6 +76,23 @@ func (c *CPU) Reset() {
 	c.insCount = 0
 }
 
+const (
+	BIT_0 = 1 << 0
+	BIT_1 = 1 << 1
+	BIT_2 = 1 << 2
+	BIT_3 = 1 << 3
+	BIT_4 = 1 << 4
+	BIT_5 = 1 << 5
+	BIT_6 = 1 << 6
+	BIT_7 = 1 << 7
+)
+
+// UpdateP sets the appropriate P (flags) register flags
+func (c *CPU) UpdateP(data Byte) {
+	c.Registers.P.Z = (data == 0)
+	c.Registers.P.N = (data&BIT_7 != 0)
+}
+
 // Step fetches & executes a single instruction
 func (c *CPU) Step() error {
 	// Fetch next instruction from PC

@@ -159,7 +159,7 @@ func (c *CPU) op_lda(i Instruction) error {
 		return err
 	}
 	c.Registers.A.Set(b)
-	// XXX update P
+	c.UpdateP(b)
 
 	return nil
 }
@@ -188,7 +188,10 @@ func (c *CPU) op_cmp(i Instruction) error {
 	return errUnimplemented
 }
 func (c *CPU) op_dex(i Instruction) error {
-	return errUnimplemented
+	c.Registers.X.Dec()
+	c.UpdateP(c.Registers.X.Get())
+
+	return nil
 }
 func (c *CPU) op_bne(i Instruction) error {
 	return errUnimplemented
