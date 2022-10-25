@@ -16,7 +16,44 @@ func (c *CPU) op_ora(i Instruction) error {
 	return errUnimplemented
 }
 func (c *CPU) op_asl(i Instruction) error {
-	return errUnimplemented
+	carryAndShift := func(data Byte) Byte {
+		c.Registers.P.SetCarry(data&BIT_7 != 0)
+		return (data << 1) & 0xfe
+	}
+
+	switch i.Mode {
+	case ACCUMULATOR:
+		data := c.Registers.A.Get()
+
+		data = carryAndShift(data)
+
+		c.Registers.A.Set(data)
+		c.Registers.P.Update(data)
+	case ZERO_PAGE:
+		zpa := c.FetchByte()
+		data := c.ReadByte(Word(zpa))
+
+		data = carryAndShift(data)
+
+		c.WriteByteZeroPage(zpa, data)
+		c.Registers.P.Update(data)
+	case ZERO_PAGE_X:
+		zpa := c.FetchByte()
+		data := c.ReadByte(Word(zpa))
+
+		data = carryAndShift(data)
+
+		c.WriteByteZeroPageX(zpa, data)
+		c.Registers.P.Update(data)
+	case ABSOLUTE:
+		return errUnsupportedMode
+	case ABSOLUTE_X:
+		return errUnsupportedMode
+	default:
+		return errUnsupportedMode
+	}
+
+	return nil
 }
 func (c *CPU) op_php(i Instruction) error {
 	return errUnimplemented
@@ -173,7 +210,7 @@ func (c *CPU) op_lda(i Instruction) error {
 		return err
 	}
 	c.Registers.A.Set(b)
-	c.UpdateP(b)
+	c.Registers.P.Update(b)
 
 	return nil
 }
@@ -203,7 +240,7 @@ func (c *CPU) op_cmp(i Instruction) error {
 }
 func (c *CPU) op_dex(i Instruction) error {
 	c.Registers.X.Dec()
-	c.UpdateP(c.Registers.X.Get())
+	c.Registers.P.Update(c.Registers.X.Get())
 
 	return nil
 }
