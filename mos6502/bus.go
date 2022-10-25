@@ -105,8 +105,7 @@ func (c *CPU) FetchWordAbsolute() Word {
 }
 
 func (c *CPU) FetchWordIndirect() Word {
-	zpa := c.FetchByte()
-	addr := c.ReadWord(Word(zpa))
+	addr := c.FetchWord()
 	return c.ReadWord(addr)
 }
 
