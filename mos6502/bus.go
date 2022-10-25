@@ -1,7 +1,7 @@
 package mos6502
 
 import (
-	"fmt"
+	"errors"
 )
 
 // ReadByte reads a single 8bit byte
@@ -16,6 +16,7 @@ func (c *CPU) FetchByte() Byte {
 	return b
 }
 
+// FetchByteMode forwards the Fetch to the appropriate function for the given addressing mode
 func (c *CPU) FetchByteMode(m AddrMode) (Byte, error) {
 	switch m {
 	case IMMEDIATE:
@@ -31,7 +32,7 @@ func (c *CPU) FetchByteMode(m AddrMode) (Byte, error) {
 	case INDIRECT_Y:
 		return c.FetchByteIndirectY(), nil
 	default:
-		return Byte(0), fmt.Errorf("Unknown or unsupported addressing mode %d")
+		return Byte(0), errors.New("unknown or unsupported addressing mode")
 	}
 }
 
@@ -65,10 +66,6 @@ func (c *CPU) FetchByteIndirectY() Byte {
 	return c.ReadByte(addr + Word(c.Registers.Y.Get()))
 }
 
-func (c *CPU) WriteByte(address Word, data Byte) {
-	c.Write(address, data)
-}
-
 // ReadWord reads a 16bit word using 2 8bit reads
 func (c *CPU) ReadWord(address Word) Word {
 	lo := c.Read(address)
@@ -84,6 +81,41 @@ func (c *CPU) FetchWord() Word {
 	return w
 }
 
+// WriteByte writes a single byte to the given address
+func (c *CPU) WriteByte(address Word, data Byte) {
+	c.Write(address, data)
+}
+
+func (c *CPU) WriteByteAbsolute(address Word, data Byte) {
+	c.WriteByte(address, data)
+}
+
+func (c *CPU) WriteByteAbsoluteX(address Word, data Byte) {
+	c.WriteByte(address+Word(c.Registers.X.Get()), data)
+}
+
+func (c *CPU) WriteByteAbsoluteY(address Word, data Byte) {
+	c.WriteByte(address+Word(c.Registers.Y.Get()), data)
+}
+
+func (c *CPU) WriteByteZeroPage(zpa Byte, data Byte) {
+	c.WriteByte(Word(zpa), data)
+}
+
+func (c *CPU) WriteByteZeroPageX(zpa Byte, data Byte) {
+	c.WriteByte(Word(zpa)+Word(c.Registers.X.Get()), data)
+}
+
+func (c *CPU) WriteByteIndirectX(base Byte, data Byte) {
+	c.WriteByte(Word(base)+Word(c.Registers.Y.Get()), data)
+}
+
+func (c *CPU) WriteByteIndirectY(base Byte, data Byte) {
+	addr := c.ReadWord(Word(base))
+	c.WriteByte(addr+Word(c.Registers.Y.Get()), data)
+}
+
+// WriteWord writes a 16bit word to the given address
 func (c *CPU) WriteWord(address Word, data Word) {
 	hi := Byte((data >> 8) & 0xFF)
 	lo := Byte(data & 0xFF)
@@ -92,6 +124,7 @@ func (c *CPU) WriteWord(address Word, data Word) {
 	c.WriteByte(address+1, hi)
 }
 
+// PushWord writes a 16bit word to the stack and decrements the stack pointer by 2
 func (c *CPU) PushWord(data Word) {
 	addr := STACK_BOTTOM + Word(c.Registers.S.Get()-1)
 	c.WriteWord(addr, data)

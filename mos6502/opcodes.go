@@ -130,6 +130,7 @@ const (
 	ZERO_PAGE_X        // Zero Page indexed X
 	ZERO_PAGE_Y        // Zero page indexed Y
 	INDIRECT           // Indirect
+	INDIRECT_X         // Indirect indexed X
 	INDIRECT_Y         // Indirect indexed Y
 )
 
