@@ -198,8 +198,11 @@ func (c *CPU) op_eor(i Instruction) error {
 func (c *CPU) op_lsr(i Instruction) error {
 	return errUnimplemented
 }
+
+// Push Accumulator
 func (c *CPU) op_pha(i Instruction) error {
-	return errUnimplemented
+	c.PushByte(c.Registers.A.Get())
+	return nil
 }
 
 // Pull Accumulator from Stack

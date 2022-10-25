@@ -153,6 +153,13 @@ func (c *CPU) WriteWord(address Word, data Word) {
 	c.WriteByte(address+1, hi)
 }
 
+// PushByte writes an 8bit byte to the stack and increments the stack pointer by 1
+func (c *CPU) PushByte(data Byte) {
+	addr := STACK_BOTTOM + Word(c.Registers.S.Get())
+	c.WriteByte(addr, data)
+	c.Registers.S.Dec()
+}
+
 // PushWord writes a 16bit word to the stack and decrements the stack pointer by 2
 func (c *CPU) PushWord(data Word) {
 	addr := STACK_BOTTOM + Word(c.Registers.S.Get()-1)
