@@ -52,6 +52,7 @@ func (c *CPU) op_and(i Instruction) error {
 	data := c.FetchByteImmediate()
 	a := c.Registers.A.Get() & data
 	c.Registers.A.Set(a)
+	c.Registers.P.Update(a)
 
 	return nil
 }
