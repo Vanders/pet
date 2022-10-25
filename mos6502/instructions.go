@@ -186,9 +186,6 @@ func (c *CPU) op_plp(i Instruction) error {
 func (c *CPU) op_and(i Instruction) error {
 	return errUnimplemented
 }
-func (c *CPU) op_sec(i Instruction) error {
-	return errUnimplemented
-}
 func (c *CPU) op_rti(i Instruction) error {
 	return errUnimplemented
 }
@@ -222,6 +219,13 @@ func (c *CPU) op_ror(i Instruction) error {
 func (c *CPU) op_rts(i Instruction) error {
 	addr := c.PopWord()
 	c.PC.Set(addr + 1)
+
+	return nil
+}
+
+// Set Carry Flag
+func (c *CPU) op_sec(i Instruction) error {
+	c.Registers.P.SetCarry(true)
 
 	return nil
 }
