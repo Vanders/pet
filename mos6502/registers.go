@@ -108,6 +108,40 @@ func (f *Flags) SetNegative(b bool) {
 	f.N = b
 }
 
+// GetByte returns the flags register as a single 8bit byte
+func (f *Flags) GetByte() Byte {
+	var status Byte
+	if f.C == true {
+		status |= BIT_0
+	}
+	if f.Z == true {
+		status |= BIT_1
+	}
+	if f.I == true {
+		status |= BIT_2
+	}
+	if f.D == true {
+		status |= BIT_3
+	}
+	if f.V == true {
+		status |= BIT_6
+	}
+	if f.N == true {
+		status |= BIT_7
+	}
+	return status
+}
+
+// SetByte sets the flags register from a single 8bit byte
+func (f *Flags) SetByte(b Byte) {
+	f.C = (b&BIT_0 != 0)
+	f.Z = (b&BIT_1 != 0)
+	f.I = (b&BIT_2 != 0)
+	f.D = (b&BIT_3 != 0)
+	f.V = (b&BIT_6 != 0)
+	f.N = (b&BIT_7 != 0)
+}
+
 func (f Flags) String() string {
 	return fmt.Sprintf("\tC: %t\n\tZ: %t\n\tI: %t\n\tD: %t\n\tB: %t\n\tV: %t\n\tN: %t",
 		f.C,

@@ -169,10 +169,6 @@ func (c *CPU) op_brk(i Instruction) error {
 	return errUnimplemented
 }
 
-func (c *CPU) op_php(i Instruction) error {
-	return errUnimplemented
-}
-
 func (c *CPU) op_bit(i Instruction) error {
 	data, err := c.FetchByteMode(i.Mode)
 	if err != nil {
@@ -189,13 +185,7 @@ func (c *CPU) op_bit(i Instruction) error {
 func (c *CPU) op_rol(i Instruction) error {
 	return errUnimplemented
 }
-func (c *CPU) op_plp(i Instruction) error {
-	return errUnimplemented
-}
 func (c *CPU) op_rti(i Instruction) error {
-	return errUnimplemented
-}
-func (c *CPU) op_eor(i Instruction) error {
 	return errUnimplemented
 }
 
@@ -205,11 +195,25 @@ func (c *CPU) op_pha(i Instruction) error {
 	return nil
 }
 
+// Push Processor Status on Stack
+func (c *CPU) op_php(i Instruction) error {
+	c.PushByte(c.Registers.P.GetByte())
+	return nil
+}
+
 // Pull Accumulator from Stack
 func (c *CPU) op_pla(i Instruction) error {
 	data := c.PopByte()
 	c.Registers.A.Set(data)
 	c.Registers.P.Update(data)
+
+	return nil
+}
+
+// Pull Processor Status from Stack
+func (c *CPU) op_plp(i Instruction) error {
+	data := c.PopByte()
+	c.Registers.P.SetByte(data)
 
 	return nil
 }
@@ -410,8 +414,19 @@ func (c *CPU) op_cpx(i Instruction) error {
 	return nil
 }
 
+// Compare Memory and Index Y
 func (c *CPU) op_cpy(i Instruction) error {
-	return errUnimplemented
+	data, err := c.FetchByteMode(i.Mode)
+	if err != nil {
+		return err
+	}
+	y := c.Registers.Y.Get()
+
+	c.Registers.P.SetCarry(y >= data)
+	c.Registers.P.SetZero(y == data)
+	c.Registers.P.SetNegative((y-data)&BIT_7 != 0)
+
+	return nil
 }
 
 // Decrement Memory by One
@@ -457,6 +472,21 @@ func (c *CPU) op_dex(i Instruction) error {
 func (c *CPU) op_dey(i Instruction) error {
 	c.Registers.Y.Dec()
 	c.Registers.P.Update(c.Registers.Y.Get())
+
+	return nil
+}
+
+// Exclusive-OR Memory with Accumulator
+func (c *CPU) op_eor(i Instruction) error {
+	data, err := c.FetchByteMode(i.Mode)
+	if err != nil {
+		return err
+	}
+	a := c.Registers.A.Get()
+	a ^= data
+
+	c.Registers.A.Set(a)
+	c.Registers.P.Update(a)
 
 	return nil
 }
