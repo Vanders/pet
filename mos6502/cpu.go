@@ -5,12 +5,6 @@ import (
 	"io"
 )
 
-// XXX Move to memory?
-type ReadWriter interface {
-	Read() Word
-	Write(Word)
-}
-
 type CPU struct {
 	Registers struct {
 		A ByteRegister // Accumulater
