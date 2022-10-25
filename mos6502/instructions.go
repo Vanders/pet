@@ -415,6 +415,32 @@ func (c *CPU) op_ora(i Instruction) error {
 	return nil
 }
 
+// Subtract Memory from Accumulator with Borrow
 func (c *CPU) op_sbc(i Instruction) error {
-	return errUnimplemented
+	data, err := c.FetchByteMode(i.Mode)
+	if err != nil {
+		return err
+	}
+
+	var res Word
+
+	// add A to NOT(memory), plus 1 for the carry flag (if set)
+	a := c.Registers.A.Get()
+	if c.Registers.P.C {
+		res = Word(a) + Word(^data) + 1
+	} else {
+		res = Word(a) + Word(^data)
+	}
+
+	// check sign bits match
+	c.Registers.P.SetOverflow((data & BIT_7) != (a & BIT_7))
+
+	// check overflow & set carry flag if needed
+	c.Registers.P.SetCarry(res > 0xff)
+
+	// update accumulator
+	c.Registers.A.Set(Byte(res & 0xff))
+	c.Registers.P.Update(c.Registers.A.Get())
+
+	return nil
 }
