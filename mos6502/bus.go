@@ -137,3 +137,9 @@ func (c *CPU) PushWord(data Word) {
 	c.WriteWord(addr, data)
 	c.Registers.S.Set(c.Registers.S.Get() - 2)
 }
+
+// PopWord reads a 16bit word from the stack and increments the stack pointer by 2
+func (c *CPU) PopWord() Word {
+	c.Registers.S.Set(c.Registers.S.Get() + 2)
+	return c.ReadWord(STACK_BOTTOM + Word(c.Registers.S.Get()-1))
+}

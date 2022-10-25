@@ -70,6 +70,10 @@ func (c *CPU) op_bcc(i Instruction) error {
 	return nil
 }
 
+func (c *CPU) op_bcs(i Instruction) error {
+	return errUnimplemented
+}
+
 // Branch on Result Zero
 func (c *CPU) op_beq(i Instruction) error {
 	addr := c.FetchByte()
@@ -108,6 +112,10 @@ func (c *CPU) op_bpl(i Instruction) error {
 	}
 
 	return nil
+}
+
+func (c *CPU) op_bvs(i Instruction) error {
+	return errUnimplemented
 }
 
 func (c *CPU) op_brk(i Instruction) error {
@@ -173,22 +181,29 @@ func (c *CPU) op_jmp(i Instruction) error {
 func (c *CPU) op_cli(i Instruction) error {
 	return errUnimplemented
 }
-func (c *CPU) op_rts(i Instruction) error {
-	return errUnimplemented
-}
 func (c *CPU) op_adc(i Instruction) error {
 	return errUnimplemented
 }
 func (c *CPU) op_pla(i Instruction) error {
 	return errUnimplemented
 }
-func (c *CPU) op_bvs(i Instruction) error {
+func (c *CPU) op_ror(i Instruction) error {
 	return errUnimplemented
 }
+
+// Return from Subroutine
+func (c *CPU) op_rts(i Instruction) error {
+	addr := c.PopWord()
+	c.PC.Set(addr + 1)
+
+	return nil
+}
+
 func (c *CPU) op_sei(i Instruction) error {
 	return errUnimplemented
 }
 
+// Store Accumulator in Memory
 func (c *CPU) op_sta(i Instruction) error {
 	data := c.Registers.A.Get()
 
@@ -220,6 +235,7 @@ func (c *CPU) op_sta(i Instruction) error {
 	return nil
 }
 
+// Store Index X in Memory
 func (c *CPU) op_stx(i Instruction) error {
 	data := c.Registers.X.Get()
 	switch i.Mode {
@@ -238,6 +254,7 @@ func (c *CPU) op_stx(i Instruction) error {
 	return nil
 }
 
+// Store Index Y in Memory
 func (c *CPU) op_sty(i Instruction) error {
 	data := c.Registers.Y.Get()
 	switch i.Mode {
@@ -256,9 +273,6 @@ func (c *CPU) op_sty(i Instruction) error {
 	return nil
 }
 
-func (c *CPU) op_ror(i Instruction) error {
-	return errUnimplemented
-}
 func (c *CPU) op_txa(i Instruction) error {
 	return errUnimplemented
 }
@@ -271,33 +285,10 @@ func (c *CPU) op_txs(i Instruction) error {
 	return nil
 }
 
-func (c *CPU) op_ldy(i Instruction) error {
-	data, err := c.FetchByteMode(i.Mode)
-	if err != nil {
-		return err
-	}
-	c.Registers.Y.Set(data)
-
-	return nil
-}
-
-func (c *CPU) op_ldx(i Instruction) error {
-	data, err := c.FetchByteMode(i.Mode)
-	if err != nil {
-		return err
-	}
-	c.Registers.X.Set(data)
-
-	return nil
-}
-
 func (c *CPU) op_tay(i Instruction) error {
 	return errUnimplemented
 }
 func (c *CPU) op_tax(i Instruction) error {
-	return errUnimplemented
-}
-func (c *CPU) op_bcs(i Instruction) error {
 	return errUnimplemented
 }
 func (c *CPU) op_tsx(i Instruction) error {
@@ -392,6 +383,28 @@ func (c *CPU) op_lda(i Instruction) error {
 	}
 	c.Registers.A.Set(data)
 	c.Registers.P.Update(data)
+
+	return nil
+}
+
+// Load Index X with Memory
+func (c *CPU) op_ldx(i Instruction) error {
+	data, err := c.FetchByteMode(i.Mode)
+	if err != nil {
+		return err
+	}
+	c.Registers.X.Set(data)
+
+	return nil
+}
+
+// Load Index Y with Memory
+func (c *CPU) op_ldy(i Instruction) error {
+	data, err := c.FetchByteMode(i.Mode)
+	if err != nil {
+		return err
+	}
+	c.Registers.Y.Set(data)
 
 	return nil
 }
