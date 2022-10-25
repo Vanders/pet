@@ -18,6 +18,22 @@ func main() {
 	mem.Reset()
 
 	// Load ROMs
+	basicLo := &ROM{
+		Base: 0xc000,
+		Size: 0x1000, // 4k
+	}
+	basicLo.Reset()
+	basicLo.Load("roms/basic-2-c000.901465-01.bin")
+	mem.Map(basicLo)
+
+	basicHi := &ROM{
+		Base: 0xd000,
+		Size: 0x1000, // 4k
+	}
+	basicHi.Reset()
+	basicHi.Load("roms/basic-2-d000.901465-02.bin")
+	mem.Map(basicHi)
+
 	edit := &ROM{
 		Base: 0xe000,
 		Size: 0x800, // 2k
