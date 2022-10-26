@@ -21,9 +21,22 @@ func main() {
 	bus := Bus{}
 
 	// Initialise memory
-	ram := &RAM{}
+
+	// Main memory
+	ram := &RAM{
+		Base: 0x0000,
+		Size: 0x7fff, // 32k
+	}
 	ram.Reset()
 	bus.Map(ram)
+
+	// Screen memory
+	sram := &RAM{
+		Base: 0x8000,
+		Size: 0x1000, // 4k
+	}
+	sram.Reset()
+	bus.Map(sram)
 
 	// Load ROMs
 	basicLo := &ROM{
@@ -74,6 +87,7 @@ func main() {
 	// Create PIAs & VIA
 	var pia *PIA
 
+	// PIA1
 	pia1 := &PIA1{
 		KbdBuffer: buf,
 	}
@@ -85,6 +99,7 @@ func main() {
 	pia.IRQ = pia1.IRQ
 	bus.Map(pia)
 
+	// PIA2
 	pia2 := &PIA2{}
 	pia = &PIA{
 		Base: 0xe820,
@@ -94,11 +109,13 @@ func main() {
 	pia.IRQ = pia2.IRQ
 	bus.Map(pia)
 
+	// VIA
 	via := &VIA{
 		Base: 0xe840,
 	}
 	bus.Map(via)
 
+	// Initialise the CPU & connect it to the bus
 	cpu := mos6502.CPU{
 		Read:   bus.Read,
 		Write:  bus.Write,
