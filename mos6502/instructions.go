@@ -779,8 +779,9 @@ func (c *CPU) op_lsr(i Instruction) error {
 	return nil
 }
 
+// No Operation
 func (c *CPU) op_nop(i Instruction) error {
-	return errUnimplemented
+	return nil
 }
 
 // OR Memory with Accumulator
