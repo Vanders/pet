@@ -36,7 +36,10 @@ const (
 
 // Log writes a formatted sting to the configured output
 func (c *CPU) Log(format string, a ...any) (int, error) {
-	return fmt.Fprintf(c.Writer, format, a...)
+	if c.Writer != nil {
+		return fmt.Fprintf(c.Writer, format, a...)
+	}
+	return 0, nil
 }
 
 func (c *CPU) Dump() {
