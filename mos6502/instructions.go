@@ -620,10 +620,21 @@ func (c *CPU) op_inc(i Instruction) error {
 
 		c.WriteByteZeroPageX(zpa, data)
 		c.Registers.P.Update(data)
+
 	case ABSOLUTE:
-		return errUnsupportedMode
+		addr := c.FetchWord()
+		data := c.ReadByte(addr)
+
+		data += 1
+
+		c.WriteByteAbsolute(addr, data)
 	case ABSOLUTE_X:
-		return errUnsupportedMode
+		addr := c.FetchWord()
+		data := c.ReadByte(Word(addr) + Word(c.Registers.X.Get()))
+
+		data += 1
+
+		c.WriteByteAbsoluteX(addr, data)
 	default:
 		return errUnsupportedMode
 	}
