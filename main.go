@@ -13,9 +13,24 @@ type (
 	Word = mos6502.Word
 )
 
-func dumpAndExit(cpu *mos6502.CPU, err error) {
+func dumpAndExit(cpu *mos6502.CPU, ram *RAM, err error) {
 	fmt.Println(err)
 	cpu.Dump()
+
+	// Dump the Zero Page
+	for n := 0; n < 256; n = n + 4 {
+		fmt.Fprintf(cpu.Writer,
+			"0x%04x: 0x%02x,\t0x%04x: 0x%02x,\t0x%04x: 0x%02x,\t0x%04x: 0x%02x\n",
+			Word(n),
+			ram.Read(Word(n)),
+			Word(n+1),
+			ram.Read(Word(n+1)),
+			Word(n+2),
+			ram.Read(Word(n+2)),
+			Word(n+3),
+			ram.Read(Word(n+3)))
+	}
+
 	os.Exit(1)
 }
 
@@ -124,9 +139,9 @@ func main() {
 
 	// Initialise the CPU & connect it to the bus
 	cpu := mos6502.CPU{
-		Read:  bus.Read,
-		Write: bus.Write,
-		//Writer: os.Stderr,
+		Read:   bus.Read,
+		Write:  bus.Write,
+		Writer: os.Stderr,
 	}
 	cpu.Reset()
 
@@ -136,7 +151,7 @@ func main() {
 	for {
 		err := cpu.Step()
 		if err != nil {
-			dumpAndExit(&cpu, fmt.Errorf("\nexecution stopped: %s", err))
+			dumpAndExit(&cpu, ram, fmt.Errorf("\nexecution stopped: %s", err))
 		}
 
 		// Update GUI
@@ -189,7 +204,7 @@ func (p *PIA1) PortRead(port int) Byte {
 
 		// get keyboard scan row (bits 0-3)
 		row := p.ports[0] & 0x0f
-		fmt.Printf("row: %d\n", row)
+
 		// does the row being scanned have a keypress?
 		if row == Byte(p.key.row) {
 			// return the key bit
