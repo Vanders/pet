@@ -1,13 +1,5 @@
 package main
 
-import (
-	"bufio"
-	"os"
-	"unicode"
-
-	term "golang.org/x/term"
-)
-
 type Key struct {
 	row uint8 // keyboard row
 	bit uint8 // keyboard bit (column)
@@ -121,39 +113,9 @@ func (kbd *Keyboard) Reset() {
 	kbd.keys['!'] = Key{0, 0}
 }
 
-func (kbd *Keyboard) Scan() {
-	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
-	if err != nil {
-		panic(err)
-	}
-	defer term.Restore(int(os.Stdin.Fd()), oldState)
-
-	reader := bufio.NewReader(os.Stdin)
-	for {
-		var shift bool
-
-		input, _, err := reader.ReadRune()
-		if err != nil {
-			panic(err)
-		}
-		char := input
-
-		// Ctrl+C
-		if char == 3 {
-			return
-		}
-
-		if unicode.IsUpper(char) {
-			shift = true
-			char = unicode.ToLower(char)
-		} else {
-			shift = false
-		}
-		_ = shift
-
-		key, ok := kbd.keys[char]
-		if ok {
-			kbd.Buffer <- key
-		}
+func (kbd *Keyboard) Scan(k rune) {
+	key, ok := kbd.keys[k]
+	if ok {
+		kbd.Buffer <- key
 	}
 }

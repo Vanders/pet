@@ -359,20 +359,21 @@ func (v *Video) Redraw() error {
 	return nil
 }
 
-func (v *Video) PollEvent() bool {
+func (v *Video) PollEvent() (bool, rune) {
 	event := sdl.PollEvent()
 	if event != nil {
 		switch e := event.(type) {
 		case *sdl.KeyboardEvent:
 			if e.State == sdl.PRESSED {
 				keyCode := e.Keysym.Sym
-				fmt.Printf("%s\n", string(keyCode))
+				fmt.Printf("%s", string(keyCode))
+				return false, rune(keyCode)
 			}
 		case *sdl.QuitEvent:
-			return true
+			return true, rune(0)
 		}
 	}
-	return false
+	return false, rune(0)
 }
 
 func (v *Video) Stop() {

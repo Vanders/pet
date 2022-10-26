@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"sync"
 
 	"github.com/vanders/pet/mos6502"
 	"github.com/veandco/go-sdl2/sdl"
@@ -21,8 +20,6 @@ func dumpAndExit(cpu *mos6502.CPU, err error) {
 }
 
 func main() {
-	var wg sync.WaitGroup
-
 	// Create a new memory bus
 	bus := Bus{}
 
@@ -84,12 +81,6 @@ func main() {
 	}
 	kbd.Reset()
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		kbd.Scan()
-	}()
-
 	// Create PIAs & VIA
 	var pia *PIA
 
@@ -139,42 +130,39 @@ func main() {
 	}
 	cpu.Reset()
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-
-		// Execute as many instructions as possible
-		for {
-			err := cpu.Step()
-			if err != nil {
-				dumpAndExit(&cpu, fmt.Errorf("\nexecution stopped: %s", err))
-			}
-
-			// Check devices for interrupts
-			if bus.CheckInterrupts() {
-				cpu.Interrupt()
-			}
-		}
-	}()
-
-	// Redraw the GUI
+	// Execute instructions
+	lastTicks := sdl.GetTicks()
+	currentTicks := lastTicks
 	for {
+		err := cpu.Step()
+		if err != nil {
+			dumpAndExit(&cpu, fmt.Errorf("\nexecution stopped: %s", err))
+		}
+
 		// Update GUI
-		quit := video.PollEvent()
+		quit, keycode := video.PollEvent()
 		if quit {
 			break
 		}
+		if keycode != rune(0) {
+			kbd.Scan(keycode)
+		}
+
+		// Check devices for interrupts
+		if bus.CheckInterrupts() {
+			cpu.Interrupt()
+		}
 
 		// Wait 50ms and then redraw the screen
-		delay := 50
-		sdl.Delay(uint32(delay))
-		err = video.Redraw()
-		if err != nil {
-			break
+		currentTicks = sdl.GetTicks()
+		if currentTicks-lastTicks > 50 {
+			err = video.Redraw()
+			if err != nil {
+				break
+			}
+			lastTicks = currentTicks
 		}
 	}
-
-	wg.Wait()
 }
 
 // Pheripheral Interface Adaptor #1
@@ -201,7 +189,7 @@ func (p *PIA1) PortRead(port int) Byte {
 
 		// get keyboard scan row (bits 0-3)
 		row := p.ports[0] & 0x0f
-
+		fmt.Printf("row: %d\n", row)
 		// does the row being scanned have a keypress?
 		if row == Byte(p.key.row) {
 			// return the key bit
