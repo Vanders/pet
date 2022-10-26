@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/vanders/pet/mos6502"
+	"github.com/veandco/go-sdl2/sdl"
 )
 
 type (
@@ -120,11 +121,21 @@ func main() {
 	}
 	bus.Map(via)
 
+	// Start video
+	video := Video{
+		Read: bus.Read,
+	}
+	err := video.Reset()
+	if err != nil {
+		panic(err)
+	}
+	defer video.Stop()
+
 	// Initialise the CPU & connect it to the bus
 	cpu := mos6502.CPU{
-		Read:   bus.Read,
-		Write:  bus.Write,
-		Writer: os.Stderr,
+		Read:  bus.Read,
+		Write: bus.Write,
+		//Writer: os.Stderr,
 	}
 	cpu.Reset()
 
@@ -145,6 +156,23 @@ func main() {
 			}
 		}
 	}()
+
+	// Redraw the GUI
+	for {
+		// Update GUI
+		quit := video.PollEvent()
+		if quit {
+			break
+		}
+
+		// Wait 50ms and then redraw the screen
+		delay := 50
+		sdl.Delay(uint32(delay))
+		err = video.Redraw()
+		if err != nil {
+			break
+		}
+	}
 
 	wg.Wait()
 }
