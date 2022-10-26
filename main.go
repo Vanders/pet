@@ -17,9 +17,13 @@ func dumpAndExit(cpu *mos6502.CPU, err error) {
 func main() {
 	var wg sync.WaitGroup
 
+	// Create a new memory bus
+	bus := Bus{}
+
 	// Initialise memory
-	var mem Memory
-	mem.Reset()
+	ram := &RAM{}
+	ram.Reset()
+	bus.Map(ram)
 
 	// Load ROMs
 	basicLo := &ROM{
@@ -28,7 +32,7 @@ func main() {
 	}
 	basicLo.Reset()
 	basicLo.Load("roms/basic-2-c000.901465-01.bin")
-	mem.Map(basicLo)
+	bus.Map(basicLo)
 
 	basicHi := &ROM{
 		Base: 0xd000,
@@ -36,7 +40,7 @@ func main() {
 	}
 	basicHi.Reset()
 	basicHi.Load("roms/basic-2-d000.901465-02.bin")
-	mem.Map(basicHi)
+	bus.Map(basicHi)
 
 	edit := &ROM{
 		Base: 0xe000,
@@ -44,7 +48,7 @@ func main() {
 	}
 	edit.Reset()
 	edit.Load("roms/edit-2-n.901447-24.bin")
-	mem.Map(edit)
+	bus.Map(edit)
 
 	kernal := &ROM{
 		Base: 0xf000,
@@ -52,7 +56,7 @@ func main() {
 	}
 	kernal.Reset()
 	kernal.Load("roms/kernal-2.901465-03.bin")
-	mem.Map(kernal)
+	bus.Map(kernal)
 
 	// Configure keyboard
 	buf := make(chan Key, 1)
@@ -79,7 +83,7 @@ func main() {
 	pia.PortRead = pia1.PortRead
 	pia.PortWrite = pia1.PortWrite
 	pia.IRQ = pia1.IRQ
-	mem.Map(pia)
+	bus.Map(pia)
 
 	pia2 := &PIA2{}
 	pia = &PIA{
@@ -88,16 +92,16 @@ func main() {
 	pia.PortRead = pia2.PortRead
 	pia.PortWrite = pia2.PortWrite
 	pia.IRQ = pia2.IRQ
-	mem.Map(pia)
+	bus.Map(pia)
 
 	via := &VIA{
 		Base: 0xe840,
 	}
-	mem.Map(via)
+	bus.Map(via)
 
 	cpu := mos6502.CPU{
-		Read:   mem.Read,
-		Write:  mem.Write,
+		Read:   bus.Read,
+		Write:  bus.Write,
 		Writer: os.Stderr,
 	}
 	cpu.Reset()
@@ -114,10 +118,8 @@ func main() {
 			}
 
 			// Check devices for interrupts
-			for _, d := range mem.Devices {
-				if d.CheckInterrupt() {
-					cpu.Interrupt()
-				}
+			if bus.CheckInterrupts() {
+				cpu.Interrupt()
 			}
 		}
 	}()
