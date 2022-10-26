@@ -82,7 +82,7 @@ func (c *CPU) op_asl(i Instruction) error {
 		c.Registers.P.Update(data)
 	case ZERO_PAGE_X:
 		zpa := c.FetchByte()
-		data := c.ReadByte(Word(zpa))
+		data := c.ReadByte(Word(zpa) + Word(c.Registers.X.Get()))
 
 		data = carryAndShift(data)
 
@@ -262,7 +262,7 @@ func (c *CPU) op_rol(i Instruction) error {
 		c.Registers.P.Update(data)
 	case ZERO_PAGE_X:
 		zpa := c.FetchByte()
-		data := c.ReadByte(Word(zpa))
+		data := c.ReadByte(Word(zpa) + Word(c.Registers.X.Get()))
 
 		data = rol(data)
 
@@ -317,7 +317,7 @@ func (c *CPU) op_ror(i Instruction) error {
 		c.Registers.P.Update(data)
 	case ZERO_PAGE_X:
 		zpa := c.FetchByte()
-		data := c.ReadByte(Word(zpa))
+		data := c.ReadByte(Word(zpa) + Word(c.Registers.X.Get()))
 
 		data = ror(data)
 
@@ -366,8 +366,9 @@ func (c *CPU) op_sec(i Instruction) error {
 	return nil
 }
 
+// Set Interrupt Disable Status
 func (c *CPU) op_sei(i Instruction) error {
-	c.Registers.P.SetNegative(true)
+	c.Registers.P.SetInterrupt(true)
 
 	return nil
 }
@@ -574,7 +575,7 @@ func (c *CPU) op_dec(i Instruction) error {
 		c.Registers.P.Update(data)
 	case ZERO_PAGE_X:
 		zpa := c.FetchByte()
-		data := c.ReadByte(Word(zpa))
+		data := c.ReadByte(Word(zpa) + Word(c.Registers.X.Get()))
 
 		data -= 1
 
@@ -635,7 +636,7 @@ func (c *CPU) op_inc(i Instruction) error {
 		c.Registers.P.Update(data)
 	case ZERO_PAGE_X:
 		zpa := c.FetchByte()
-		data := c.ReadByte(Word(zpa))
+		data := c.ReadByte(Word(zpa) + Word(c.Registers.X.Get()))
 
 		data += 1
 
@@ -719,6 +720,7 @@ func (c *CPU) op_ldx(i Instruction) error {
 		return err
 	}
 	c.Registers.X.Set(data)
+	c.Registers.P.Update(data)
 
 	return nil
 }
@@ -730,6 +732,7 @@ func (c *CPU) op_ldy(i Instruction) error {
 		return err
 	}
 	c.Registers.Y.Set(data)
+	c.Registers.P.Update(data)
 
 	return nil
 }
@@ -759,7 +762,7 @@ func (c *CPU) op_lsr(i Instruction) error {
 		c.Registers.P.Update(data)
 	case ZERO_PAGE_X:
 		zpa := c.FetchByte()
-		data := c.ReadByte(Word(zpa))
+		data := c.ReadByte(Word(zpa) + Word(c.Registers.X.Get()))
 
 		data = carryAndShift(data)
 
