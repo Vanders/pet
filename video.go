@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 
 	"github.com/veandco/go-sdl2/sdl"
 	"github.com/veandco/go-sdl2/ttf"
@@ -366,7 +365,6 @@ func (v *Video) PollEvent() (bool, rune) {
 		case *sdl.KeyboardEvent:
 			if e.State == sdl.PRESSED {
 				keyCode := e.Keysym.Sym
-				fmt.Printf("%s", string(keyCode))
 				return false, rune(keyCode)
 			}
 		case *sdl.QuitEvent:
