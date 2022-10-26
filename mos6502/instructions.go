@@ -189,10 +189,6 @@ func (c *CPU) op_bit(i Instruction) error {
 	return nil
 }
 
-func (c *CPU) op_rti(i Instruction) error {
-	return errUnimplemented
-}
-
 // Push Accumulator
 func (c *CPU) op_pha(i Instruction) error {
 	c.PushByte(c.Registers.A.Get())
@@ -328,6 +324,23 @@ func (c *CPU) op_ror(i Instruction) error {
 	default:
 		return errUnsupportedMode
 	}
+
+	return nil
+}
+
+// Return from Interrupt
+func (c *CPU) op_rti(i Instruction) error {
+	p := c.PopByte()
+	c.Registers.P.SetByte(p)
+
+	// Force clear BCD mode flag
+	c.Registers.P.B = false
+
+	addr := c.PopWord()
+	c.PC.Set(addr + 1)
+
+	// CPU is no longer servicing an interrupt
+	c.isr = false
 
 	return nil
 }
