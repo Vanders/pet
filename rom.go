@@ -2,22 +2,20 @@ package main
 
 import (
 	"io/ioutil"
-
-	"github.com/vanders/pet/mos6502"
 )
 
 type ROM struct {
-	Base mos6502.Word
-	Size mos6502.Word
+	Base Word
+	Size Word
 
-	mem []mos6502.Byte
+	mem []Byte
 }
 
-func (r *ROM) GetBase() mos6502.Word {
+func (r *ROM) GetBase() Word {
 	return r.Base
 }
 
-func (r *ROM) GetSize() mos6502.Word {
+func (r *ROM) GetSize() Word {
 	return r.Size
 }
 
@@ -26,18 +24,18 @@ func (r *ROM) CheckInterrupt() bool {
 }
 
 func (r *ROM) Reset() {
-	r.mem = make([]mos6502.Byte, r.Size)
+	r.mem = make([]Byte, r.Size)
 
-	for n := mos6502.Word(0); n < r.Size; n++ {
+	for n := Word(0); n < r.Size; n++ {
 		r.mem[n] = 0x00
 	}
 }
 
-func (r *ROM) Read(address mos6502.Word) mos6502.Byte {
+func (r *ROM) Read(address Word) Byte {
 	return r.mem[address-r.Base]
 }
 
-func (r *ROM) Write(mos6502.Word, mos6502.Byte) {
+func (r *ROM) Write(Word, Byte) {
 	// ROM
 }
 
@@ -46,10 +44,10 @@ func (r *ROM) Load(filename string) {
 	if err != nil {
 		panic(err)
 	}
-	if mos6502.Word(len(data)) > r.Size {
+	if Word(len(data)) > r.Size {
 		panic("can't load that there (too big)")
 	}
 	for n := 0; n < len(data); n++ {
-		r.mem[mos6502.Word(n)] = mos6502.Byte(data[n])
+		r.mem[Word(n)] = Byte(data[n])
 	}
 }

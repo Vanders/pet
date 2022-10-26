@@ -8,6 +8,11 @@ import (
 	"github.com/vanders/pet/mos6502"
 )
 
+type (
+	Byte = mos6502.Byte
+	Word = mos6502.Word
+)
+
 func dumpAndExit(cpu *mos6502.CPU, err error) {
 	fmt.Println(err)
 	cpu.Dump()
@@ -146,13 +151,13 @@ func main() {
 
 // Pheripheral Interface Adaptor #1
 type PIA1 struct {
-	ports [4]mos6502.Byte // 4 8bit ports
+	ports [4]Byte // 4 8bit ports
 
 	KbdBuffer chan (Key) // Keyboard "buffer"
 	key       Key        // Last keypress
 }
 
-func (p *PIA1) PortRead(port int) mos6502.Byte {
+func (p *PIA1) PortRead(port int) Byte {
 	switch port {
 	case 0:
 		/* DICcKKKK
@@ -170,18 +175,18 @@ func (p *PIA1) PortRead(port int) mos6502.Byte {
 		row := p.ports[0] & 0x0f
 
 		// does the row being scanned have a keypress?
-		if row == mos6502.Byte(p.key.row) {
+		if row == Byte(p.key.row) {
 			// return the key bit
-			return mos6502.Byte(0xff - (0x01 << p.key.bit))
+			return Byte(0xff - (0x01 << p.key.bit))
 		} else {
 			// nothing here
-			return mos6502.Byte(0xff)
+			return Byte(0xff)
 		}
 	}
 	return p.ports[port]
 }
 
-func (p *PIA1) PortWrite(port int, data mos6502.Byte) {
+func (p *PIA1) PortWrite(port int, data Byte) {
 	p.ports[port] = data
 }
 
@@ -198,14 +203,14 @@ func (p *PIA1) IRQ() bool {
 
 // Pheripheral Interface Adaptor #2
 type PIA2 struct {
-	ports [4]mos6502.Byte // 4 8bit ports
+	ports [4]Byte // 4 8bit ports
 }
 
-func (p *PIA2) PortRead(port int) mos6502.Byte {
+func (p *PIA2) PortRead(port int) Byte {
 	return p.ports[port]
 }
 
-func (p *PIA2) PortWrite(port int, data mos6502.Byte) {
+func (p *PIA2) PortWrite(port int, data Byte) {
 	p.ports[port] = data
 }
 

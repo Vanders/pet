@@ -3,18 +3,16 @@ package main
 import (
 	"fmt"
 	"io"
-
-	"github.com/vanders/pet/mos6502"
 )
 
 type ReadWriter interface {
-	Read(mos6502.Word) mos6502.Byte
-	Write(mos6502.Word, mos6502.Byte)
+	Read(Word) Byte
+	Write(Word, Byte)
 }
 
 type Device interface {
-	GetBase() mos6502.Word
-	GetSize() mos6502.Word
+	GetBase() Word
+	GetSize() Word
 	CheckInterrupt() bool
 	ReadWriter
 }
@@ -38,7 +36,7 @@ func (b *Bus) Map(device Device) {
 	b.Devices = append([]Device{device}, b.Devices...)
 }
 
-func (b *Bus) Read(address mos6502.Word) mos6502.Byte {
+func (b *Bus) Read(address Word) Byte {
 	b.debug("read $%04x\n", address)
 
 	for n, d := range b.Devices {
@@ -53,10 +51,10 @@ func (b *Bus) Read(address mos6502.Word) mos6502.Byte {
 			return d.Read(address)
 		}
 	}
-	return mos6502.Byte(0)
+	return Byte(0)
 }
 
-func (b *Bus) Write(address mos6502.Word, data mos6502.Byte) {
+func (b *Bus) Write(address Word, data Byte) {
 	b.debug("write $%04x\n", address)
 
 	for n, d := range b.Devices {

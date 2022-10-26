@@ -1,39 +1,35 @@
 package main
 
-import (
-	"github.com/vanders/pet/mos6502"
-)
-
 // VIA models a Versatile Interface Adaptor
 type VIA struct {
-	Base mos6502.Word // Base address
+	Base Word // Base address
 
-	portAOut    mos6502.Byte
-	portBOut    mos6502.Byte
-	portADir    mos6502.Byte
-	portBDir    mos6502.Byte
-	timer1      mos6502.Word
-	timer1latch mos6502.Word
-	timer2      mos6502.Word
-	timer2latch mos6502.Word
-	peripheral  mos6502.Byte
-	ifr         mos6502.Byte
-	ie          mos6502.Byte
+	portAOut    Byte
+	portBOut    Byte
+	portADir    Byte
+	portBDir    Byte
+	timer1      Word
+	timer1latch Word
+	timer2      Word
+	timer2latch Word
+	peripheral  Byte
+	ifr         Byte
+	ie          Byte
 }
 
-func (v *VIA) GetBase() mos6502.Word {
+func (v *VIA) GetBase() Word {
 	return v.Base
 }
 
-func (v *VIA) GetSize() mos6502.Word {
-	return mos6502.Word(16)
+func (v *VIA) GetSize() Word {
+	return Word(16)
 }
 
 func (v *VIA) CheckInterrupt() bool {
 	return false
 }
 
-func (v *VIA) Read(address mos6502.Word) mos6502.Byte {
+func (v *VIA) Read(address Word) Byte {
 	port := address - v.Base
 	switch port {
 	case 0x0: // Port B output
@@ -61,13 +57,13 @@ func (v *VIA) Read(address mos6502.Word) mos6502.Byte {
 	case 0xf: // IO Port A output, without handshaking
 		return v.portAOut
 	default:
-		return mos6502.Byte(0)
+		return Byte(0)
 	}
 
-	return mos6502.Byte(0)
+	return Byte(0)
 }
 
-func (v *VIA) Write(address mos6502.Word, data mos6502.Byte) {
+func (v *VIA) Write(address Word, data Byte) {
 	port := address - v.Base
 	switch port {
 	case 0x0: // Port B output
