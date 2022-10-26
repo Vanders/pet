@@ -165,12 +165,10 @@ func (p *PIA1) PortRead(port int) mos6502.Byte {
 		return p.ports[port] | mos6502.BIT_7 // Diagnostic Sense is always high
 	case 2:
 		// KKKKKKKK	K=Keyboard Row Input
+
 		// get keyboard scan row (bits 0-3)
 		row := p.ports[0] & 0x0f
-		// startup can sometimes set the row to 0x0f
-		if row > 9 {
-			return mos6502.Byte(0xff)
-		}
+
 		// does the row being scanned have a keypress?
 		if row == mos6502.Byte(p.key.row) {
 			// return the key bit
