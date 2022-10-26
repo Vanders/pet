@@ -361,7 +361,9 @@ func (c *CPU) op_sec(i Instruction) error {
 }
 
 func (c *CPU) op_sei(i Instruction) error {
-	return errUnimplemented
+	c.Registers.P.SetNegative(true)
+
+	return nil
 }
 
 // Store Accumulator in Memory
@@ -633,7 +635,6 @@ func (c *CPU) op_inc(i Instruction) error {
 
 		c.WriteByteZeroPageX(zpa, data)
 		c.Registers.P.Update(data)
-
 	case ABSOLUTE:
 		addr := c.FetchWord()
 		data := c.ReadByte(addr)
@@ -641,6 +642,7 @@ func (c *CPU) op_inc(i Instruction) error {
 		data += 1
 
 		c.WriteByteAbsolute(addr, data)
+		c.Registers.P.Update(data)
 	case ABSOLUTE_X:
 		addr := c.FetchWord()
 		data := c.ReadByte(Word(addr) + Word(c.Registers.X.Get()))
@@ -648,6 +650,7 @@ func (c *CPU) op_inc(i Instruction) error {
 		data += 1
 
 		c.WriteByteAbsoluteX(addr, data)
+		c.Registers.P.Update(data)
 	default:
 		return errUnsupportedMode
 	}
