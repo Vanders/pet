@@ -91,7 +91,7 @@ func main() {
 
 	// Configure keyboard
 	buf := make(chan Key, 1)
-	kbd := Keyboard{
+	kbd := &Keyboard{
 		Buffer: buf,
 	}
 	kbd.Reset()
@@ -101,6 +101,7 @@ func main() {
 
 	// PIA1
 	pia1 := &PIA1{
+		Keyboard:  kbd,
 		KbdBuffer: buf,
 	}
 	pia = &PIA{
@@ -141,7 +142,7 @@ func main() {
 	cpu := mos6502.CPU{
 		Read:   bus.Read,
 		Write:  bus.Write,
-		Writer: os.Stderr,
+		Writer: nil, // os.Stderr
 	}
 	cpu.Reset()
 
@@ -185,6 +186,7 @@ func main() {
 type PIA1 struct {
 	ports [4]Byte // 4 8bit ports
 
+	Keyboard  *Keyboard  // Keyboard
 	KbdBuffer chan (Key) // Keyboard "buffer"
 	key       Key        // Last keypress
 }
@@ -205,15 +207,7 @@ func (p *PIA1) PortRead(port int) Byte {
 
 		// get keyboard scan row (bits 0-3)
 		row := p.ports[0] & 0x0f
-
-		// does the row being scanned have a keypress?
-		if row == Byte(p.key.row) {
-			// return the key bit
-			return Byte(0xff - (0x01 << p.key.bit))
-		} else {
-			// nothing here
-			return Byte(0xff)
-		}
+		return p.Keyboard.Get(row)
 	}
 	return p.ports[port]
 }

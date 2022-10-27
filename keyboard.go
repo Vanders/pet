@@ -3,23 +3,66 @@ package main
 // Keypress contains the data from a key press
 type Keypress struct {
 	Keycode   int
+	Char      rune
+	State     KeyState
 	Modifiers struct {
 		Shift bool
 	}
 }
 
+type KeyState int
+
+const (
+	KEY_DOWN = 0
+	KEY_UP   = 1
+)
+
+// Key defines the key scan data for an individual key
 type Key struct {
 	row uint8 // keyboard row
 	bit uint8 // keyboard bit (column)
 }
 
+// Matrix defines the map of the keyboard scan matrix
+type Matrix struct {
+	Rows [10]Byte
+}
+
+// Reset all the rows active high (off)
+func (m *Matrix) Reset() {
+	for n := 0; n < 10; n++ {
+		m.Rows[n] = 0xff
+	}
+}
+
+// Set a single bit in a row active low (on)
+func (m *Matrix) Set(row, bit uint8) {
+	m.Rows[row] &= ^(0x01 << bit)
+}
+
+// Set a single bit in a row active high (off)
+func (m *Matrix) Clear(row, bit uint8) {
+	m.Rows[row] |= 0x01 << bit
+}
+
+// Get the current status of a row
+func (m *Matrix) Get(row uint8) Byte {
+	if row < 10 {
+		return m.Rows[row]
+	}
+	return 0xff
+}
+
 type Keyboard struct {
 	Buffer chan<- (Key) // Keyboard "buffer"
 
-	keys map[rune]Key
+	matrix Matrix // Keyboard scan matrix
+	keys   map[rune]Key
 }
 
 func (kbd *Keyboard) Reset() {
+	kbd.matrix.Reset()
+
 	kbd.keys = make(map[rune]Key)
 	kbd.keys['='] = Key{9, 7}
 	kbd.keys['.'] = Key{9, 6}
@@ -122,8 +165,27 @@ func (kbd *Keyboard) Reset() {
 }
 
 func (kbd *Keyboard) Scan(k Keypress) {
-	key, ok := kbd.keys[rune(k.Keycode)]
+	var keycode rune
+
+	if k.Char != rune(0) {
+		keycode = k.Char
+	} else {
+		keycode = rune(k.Keycode)
+	}
+
+	key, ok := kbd.keys[keycode]
 	if ok {
 		kbd.Buffer <- key
+
+		switch k.State {
+		case KEY_DOWN:
+			kbd.matrix.Set(key.row, key.bit)
+		case KEY_UP:
+			kbd.matrix.Clear(key.row, key.bit)
+		}
 	}
+}
+
+func (kbd *Keyboard) Get(row Byte) Byte {
+	return kbd.matrix.Get(uint8(row))
 }

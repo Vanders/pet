@@ -285,8 +285,9 @@ var (
 type Video struct {
 	Read func(address Word) Byte // Read a single byte from the bus
 
-	window *sdl.Window
-	font   *ttf.Font
+	lastChar rune
+	window   *sdl.Window
+	font     *ttf.Font
 }
 
 func (v *Video) Reset() error {
@@ -316,6 +317,8 @@ func (v *Video) Reset() error {
 	if err != nil {
 		return err
 	}
+
+	v.lastChar = rune(0)
 
 	return nil
 }
@@ -363,21 +366,58 @@ func (v *Video) Event() Event {
 	sdlEvent := sdl.PollEvent()
 	if sdlEvent != nil {
 		switch event := sdlEvent.(type) {
-		case *sdl.KeyboardEvent:
-			if event.State == sdl.PRESSED {
-				k := Keypress{
-					Keycode: int(event.Keysym.Sym),
-				}
+		case *sdl.TextInputEvent:
+			// Remember what was typed for the subsequent KEY_UP event
+			v.lastChar = rune(event.Text[0])
 
-				switch event.Keysym.Mod {
-				case sdl.KMOD_LSHIFT,
-					sdl.KMOD_RSHIFT:
-					k.Modifiers.Shift = true
+			// Send a KEY_DOWN event for this printable key
+			k := Keypress{
+				Char:  v.lastChar,
+				State: KEY_DOWN,
+			}
+
+			return EventKeypress{
+				Key: k,
+			}
+
+		case *sdl.KeyboardEvent:
+			k := Keypress{
+				Keycode: int(event.Keysym.Sym),
+			}
+
+			// Only send KEY_DOWN events for non-printable keys are interesting
+			if event.State == sdl.PRESSED {
+				k.State = KEY_DOWN
+
+				switch event.Keysym.Sym {
+				case sdl.K_ESCAPE,
+					sdl.K_RETURN:
+
+					return EventKeypress{
+						Key: k,
+					}
+				default:
+					// Ignore everything else; TextInputEvent will send KEY_DOWN events for those
+					break
 				}
+			} else if event.State == sdl.RELEASED {
+				k.State = KEY_UP
+
+				// Send the last printable character that was typed with this KEY_UP and reset the key
+				k.Char = v.lastChar
+				v.lastChar = rune(0)
 
 				return EventKeypress{
 					Key: k,
 				}
+				/*
+					switch event.Keysym.Mod {
+					case sdl.KMOD_LSHIFT,
+						sdl.KMOD_RSHIFT:
+						k.Modifiers.Shift = true
+					}
+				*/
+
 			}
 		case *sdl.QuitEvent:
 			return EventQuit{}
