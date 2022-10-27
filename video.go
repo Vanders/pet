@@ -390,8 +390,11 @@ func (v *Video) Event() Event {
 				k.State = KEY_DOWN
 
 				switch event.Keysym.Sym {
-				case sdl.K_ESCAPE,
-					sdl.K_RETURN:
+				case sdl.K_RETURN,
+					sdl.K_ESCAPE,
+					sdl.K_BACKSPACE:
+
+					//fmt.Printf("%d (0x%02x)\n", k.Keycode, k.Keycode)
 
 					return EventKeypress{
 						Key: k,

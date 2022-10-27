@@ -93,13 +93,6 @@ func (kbd *Keyboard) Reset() {
 
 	kbd.keys['3'] = Key{6, 7}
 	kbd.keys['1'] = Key{6, 6}
-	/*
-		if EnableTrace == false {
-			kbd.keys['\r'] = Key{6, 5} //RETURN
-		} else {
-			kbd.keys['`'] = Key{6, 5} //RETURN
-		}
-	*/
 	kbd.keys['\r'] = Key{6, 5} //RETURN
 
 	kbd.keys[';'] = Key{6, 4}
@@ -145,7 +138,7 @@ func (kbd *Keyboard) Reset() {
 	kbd.keys['e'] = Key{2, 1}
 	kbd.keys['q'] = Key{2, 0}
 
-	//kbd.keys['\b'] = Key{1, 7} // DEL
+	kbd.keys[0x08] = Key{1, 7}   // DEL
 	kbd.keys['\102'] = Key{1, 6} // cursor down
 	//kbd.keys[''] = Key{1,5}
 	kbd.keys[')'] = Key{1, 4}
@@ -156,7 +149,7 @@ func (kbd *Keyboard) Reset() {
 
 	kbd.keys['\103'] = Key{0, 7} // cursor right
 	kbd.keys['\176'] = Key{0, 6} // home
-	kbd.keys['\177'] = Key{0, 5} // backspace
+	//kbd.keys['\177'] = Key{0, 5} // backspace
 	kbd.keys['('] = Key{0, 4}
 	kbd.keys['&'] = Key{0, 3}
 	kbd.keys['%'] = Key{0, 2}
