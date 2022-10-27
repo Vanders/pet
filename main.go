@@ -148,19 +148,20 @@ func main() {
 	// Execute instructions
 	lastTicks := sdl.GetTicks()
 	currentTicks := lastTicks
-	for {
+	running := true
+	for running {
 		err := cpu.Step()
 		if err != nil {
 			dumpAndExit(&cpu, ram, fmt.Errorf("\nexecution stopped: %s", err))
 		}
 
 		// Update GUI
-		quit, keycode := video.PollEvent()
-		if quit {
+		switch event := video.Event().(type) {
+		case EventQuit:
+			running = false
 			break
-		}
-		if keycode != rune(0) {
-			kbd.Scan(keycode)
+		case EventKeypress:
+			kbd.Scan(event.Key)
 		}
 
 		// Check devices for interrupts

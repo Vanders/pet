@@ -1,5 +1,13 @@
 package main
 
+// Keypress contains the data from a key press
+type Keypress struct {
+	Keycode   int
+	Modifiers struct {
+		Shift bool
+	}
+}
+
 type Key struct {
 	row uint8 // keyboard row
 	bit uint8 // keyboard bit (column)
@@ -113,8 +121,8 @@ func (kbd *Keyboard) Reset() {
 	kbd.keys['!'] = Key{0, 0}
 }
 
-func (kbd *Keyboard) Scan(k rune) {
-	key, ok := kbd.keys[k]
+func (kbd *Keyboard) Scan(k Keypress) {
+	key, ok := kbd.keys[rune(k.Keycode)]
 	if ok {
 		kbd.Buffer <- key
 	}
