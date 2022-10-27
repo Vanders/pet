@@ -34,6 +34,8 @@ func dumpAndExit(cpu *mos6502.CPU, ram *RAM, err error) {
 	os.Exit(1)
 }
 
+const romVersion = 4
+
 func main() {
 	// Create a new memory bus
 	bus := Bus{}
@@ -57,37 +59,80 @@ func main() {
 	bus.Map(sram)
 
 	// Load ROMs
-	basicLo := &ROM{
-		Base: 0xc000,
-		Size: 0x1000, // 4k
-	}
-	basicLo.Reset()
-	basicLo.Load("roms/basic-2-c000.901465-01.bin")
-	bus.Map(basicLo)
+	switch romVersion {
+	case 2:
+		basicLo := &ROM{
+			Base: 0xc000,
+			Size: 0x1000, // 4k
+		}
+		basicLo.Reset()
+		basicLo.Load("roms/basic-2-c000.901465-01.bin")
+		bus.Map(basicLo)
 
-	basicHi := &ROM{
-		Base: 0xd000,
-		Size: 0x1000, // 4k
-	}
-	basicHi.Reset()
-	basicHi.Load("roms/basic-2-d000.901465-02.bin")
-	bus.Map(basicHi)
+		basicHi := &ROM{
+			Base: 0xd000,
+			Size: 0x1000, // 4k
+		}
+		basicHi.Reset()
+		basicHi.Load("roms/basic-2-d000.901465-02.bin")
+		bus.Map(basicHi)
 
-	edit := &ROM{
-		Base: 0xe000,
-		Size: 0x800, // 2k
-	}
-	edit.Reset()
-	edit.Load("roms/edit-2-n.901447-24.bin")
-	bus.Map(edit)
+		edit := &ROM{
+			Base: 0xe000,
+			Size: 0x800, // 2k
+		}
+		edit.Reset()
+		edit.Load("roms/edit-2-n.901447-24.bin")
+		bus.Map(edit)
 
-	kernal := &ROM{
-		Base: 0xf000,
-		Size: 0x1000, // 4k
+		kernal := &ROM{
+			Base: 0xf000,
+			Size: 0x1000, // 4k
+		}
+		kernal.Reset()
+		kernal.Load("roms/kernal-2.901465-03.bin")
+		bus.Map(kernal)
+	case 4:
+		basic1 := &ROM{
+			Base: 0xb000,
+			Size: 0x1000, // 4k
+		}
+		basic1.Reset()
+		basic1.Load("roms/basic-4-b000.901465-23.bin")
+		bus.Map(basic1)
+
+		basic2 := &ROM{
+			Base: 0xc000,
+			Size: 0x1000, // 4k
+		}
+		basic2.Reset()
+		basic2.Load("roms/basic-4-c000.901465-20.bin")
+		bus.Map(basic2)
+
+		basic3 := &ROM{
+			Base: 0xd000,
+			Size: 0x1000, // 4k
+		}
+		basic3.Reset()
+		basic3.Load("roms/basic-4-d000.901465-21.bin")
+		bus.Map(basic3)
+
+		edit := &ROM{
+			Base: 0xe000,
+			Size: 0x800, // 2k
+		}
+		edit.Reset()
+		edit.Load("roms/edit-4-40-n-50Hz.901498-01.bin")
+		bus.Map(edit)
+
+		kernal := &ROM{
+			Base: 0xf000,
+			Size: 0x1000, // 4k
+		}
+		kernal.Reset()
+		kernal.Load("roms/kernal-4.901465-22.bin")
+		bus.Map(kernal)
 	}
-	kernal.Reset()
-	kernal.Load("roms/kernal-2.901465-03.bin")
-	bus.Map(kernal)
 
 	// Configure keyboard
 	buf := make(chan Key, 1)
