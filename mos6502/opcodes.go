@@ -112,6 +112,7 @@ func (c *CPU) makeInstructionSet() map[Opcode]Instruction {
 		INS_CPX_AB:  {ABSOLUTE, 2, "CPX $%04x", c.op_cpx},
 		INS_INC_AB:  {ABSOLUTE, 2, "INC $%04x", c.op_inc},
 		INS_BEQ_RE:  {RELATIVE, 1, "BEQ $%02x", c.op_beq},
+		INS_BVC_RE:  {RELATIVE, 1, "BVC $%02x", c.op_bvc},
 	}
 }
 
@@ -257,4 +258,5 @@ const (
 	INS_INC_AB  = 0xee // increment absolute
 
 	INS_BEQ_RE = 0xf0 // branch if equal relative
+	INS_BVC_RE = 0x50 // branch if overflow relative
 )

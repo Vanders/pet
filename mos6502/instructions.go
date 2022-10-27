@@ -168,6 +168,16 @@ func (c *CPU) op_bpl(i Instruction) error {
 	return nil
 }
 
+// Branch on Overflow Clear
+func (c *CPU) op_bvc(i Instruction) error {
+	addr := c.FetchByte()
+	if c.Registers.P.V == false {
+		c.op_branch_relative(addr)
+	}
+
+	return nil
+}
+
 // Branch on Overflow Set
 func (c *CPU) op_bvs(i Instruction) error {
 	addr := c.FetchByte()
