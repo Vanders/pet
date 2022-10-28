@@ -379,19 +379,28 @@ func (v *Video) EventLoop(ctx context.Context, events chan<- Event) {
 		sdlEvent := sdl.WaitEvent()
 		switch event := sdlEvent.(type) {
 		case *sdl.TextInputEvent:
-			// Remember what was typed for the subsequent KEY_UP event
-			v.lastChar = rune(event.Text[0])
+			char := rune(event.Text[0])
+
+			// If this key isn't the same as before, send a KEY_UP event for the previous key
+			if v.lastChar != char {
+				events <- EventKeypress{
+					Key: Keypress{
+						Char:  v.lastChar,
+						State: KEY_UP,
+					},
+				}
+			}
+
+			// Remember what was typed for subsequent keypress events
+			v.lastChar = char
 
 			// Send a KEY_DOWN event for this printable key
-			k := Keypress{
-				Char:  v.lastChar,
-				State: KEY_DOWN,
-			}
-
 			events <- EventKeypress{
-				Key: k,
+				Key: Keypress{
+					Char:  v.lastChar,
+					State: KEY_DOWN,
+				},
 			}
-
 		case *sdl.KeyboardEvent:
 			k := Keypress{
 				Keycode: int(event.Keysym.Sym),
@@ -406,13 +415,13 @@ func (v *Video) EventLoop(ctx context.Context, events chan<- Event) {
 					sdl.K_ESCAPE,
 					sdl.K_BACKSPACE:
 
-					//fmt.Printf("%d (0x%02x)\n", k.Keycode, k.Keycode)
-
+					// Send new key press event
 					events <- EventKeypress{
 						Key: k,
 					}
 				default:
 					// Ignore everything else; TextInputEvent will send KEY_DOWN events for those
+					break
 				}
 			} else if event.State == sdl.RELEASED {
 				k.State = KEY_UP
@@ -421,6 +430,7 @@ func (v *Video) EventLoop(ctx context.Context, events chan<- Event) {
 				k.Char = v.lastChar
 				v.lastChar = rune(0)
 
+				// Send new key press event
 				events <- EventKeypress{
 					Key: k,
 				}
