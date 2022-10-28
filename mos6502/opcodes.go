@@ -113,6 +113,7 @@ func (c *CPU) makeInstructionSet() map[Opcode]Instruction {
 		INS_INC_AB:  {ABSOLUTE, 2, "INC $%04x", c.op_inc},
 		INS_BEQ_RE:  {RELATIVE, 1, "BEQ $%02x", c.op_beq},
 		INS_BVC_RE:  {RELATIVE, 1, "BVC $%02x", c.op_bvc},
+		INS_AND_ZP:  {ZERO_PAGE, 1, "AND $%02x", c.op_and},
 	}
 }
 
@@ -156,6 +157,7 @@ const (
 	INS_ROL_ZP = 0x26 // rotate left zero page
 	INS_PLP    = 0x28 // pull status
 	INS_AND_IM = 0x29 // AND immediate
+	INS_AND_ZP = 0x25 // AND zero page
 	INS_ROL_AC = 0x2a // rotate left accumulator
 	INS_BIT_AB = 0x2c // test bit absolute
 

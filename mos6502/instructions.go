@@ -573,7 +573,6 @@ func (c *CPU) op_cpy(i Instruction) error {
 
 // Decrement Memory by One
 func (c *CPU) op_dec(i Instruction) error {
-
 	switch i.Mode {
 	case ZERO_PAGE:
 		zpa := c.FetchByte()
@@ -592,9 +591,21 @@ func (c *CPU) op_dec(i Instruction) error {
 		c.WriteByteZeroPageX(zpa, data)
 		c.Registers.P.Update(data)
 	case ABSOLUTE:
-		return errUnsupportedMode
+		addr := c.FetchWord()
+		data := c.ReadByte(addr)
+
+		data -= 1
+
+		c.WriteByteAbsolute(addr, data)
+		c.Registers.P.Update(data)
 	case ABSOLUTE_X:
-		return errUnsupportedMode
+		addr := c.FetchWord()
+		data := c.ReadByte(Word(addr) + Word(c.Registers.X.Get()))
+
+		data -= 1
+
+		c.WriteByteAbsoluteX(addr, data)
+		c.Registers.P.Update(data)
 	default:
 		return errUnsupportedMode
 	}
