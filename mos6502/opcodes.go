@@ -114,6 +114,7 @@ func (c *CPU) makeInstructionSet() map[Opcode]Instruction {
 		INS_BEQ_RE:  {RELATIVE, 1, "BEQ $%02x", c.op_beq},
 		INS_BVC_RE:  {RELATIVE, 1, "BVC $%02x", c.op_bvc},
 		INS_AND_ZP:  {ZERO_PAGE, 1, "AND $%02x", c.op_and},
+		INS_SBC_ABX: {ABSOLUTE_X, 1, "SBC %02x,X", c.op_sbc},
 	}
 }
 
@@ -252,12 +253,13 @@ const (
 	INS_INC_ZP = 0xe6 // increment zero page
 	INS_INX    = 0xe8 // increment x
 	INS_SBC_IM = 0xe9 // subtract with carry immediate
+	INS_NOP    = 0xea // no-op
+	INS_CPX_AB = 0xec // compare x absolute
+	INS_INC_AB = 0xee // increment absolute
 
 	INS_SBC_IY  = 0xf1 // subtract with carry indirect y
 	INS_SBC_ABY = 0xf9 // subtract with carry absolute y
-	INS_NOP     = 0xea // no-op
-	INS_CPX_AB  = 0xec // compare x absolute
-	INS_INC_AB  = 0xee // increment absolute
+	INS_SBC_ABX = 0xfd // subtract with carry zero page indexed x
 
 	INS_BEQ_RE = 0xf0 // branch if equal relative
 	INS_BVC_RE = 0x50 // branch if overflow relative
