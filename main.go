@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"io"
 	"os"
@@ -41,8 +42,6 @@ func dump(cpu *mos6502.CPU, ram *RAM) {
 	}
 }
 
-const romVersion = 2
-
 func main() {
 	var (
 		writer io.Writer //= os.Stderr
@@ -50,6 +49,14 @@ func main() {
 		wg     sync.WaitGroup
 	)
 	ctx, cancel := context.WithCancel(context.Background())
+
+	debug := flag.Bool("d", false, "enable CPU dissasembly")
+	romVersion := flag.Int("r", 2, "ROM version (2 or 4)")
+	flag.Parse()
+
+	if *debug {
+		writer = os.Stderr
+	}
 
 	// Create a new memory bus
 	bus := Bus{}
@@ -73,7 +80,7 @@ func main() {
 	bus.Map(sram)
 
 	// Load ROMs
-	switch romVersion {
+	switch *romVersion {
 	case 2:
 		basicLo := &ROM{
 			Base: 0xc000,
@@ -146,6 +153,9 @@ func main() {
 		kernal.Reset()
 		kernal.Load("roms/kernal-4.901465-22.bin")
 		bus.Map(kernal)
+	default:
+		fmt.Fprintf(os.Stderr, "Invalid ROM version %d\n", *romVersion)
+		os.Exit(1)
 	}
 
 	// Configure keyboard
