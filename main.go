@@ -1,12 +1,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
+	"sync"
 
 	"github.com/vanders/pet/mos6502"
-	"github.com/veandco/go-sdl2/sdl"
 )
 
 type (
@@ -42,10 +43,13 @@ func dump(cpu *mos6502.CPU, ram *RAM) {
 
 const romVersion = 2
 
-var writer io.Writer
-
 func main() {
-	//writer = os.Stderr
+	var (
+		writer io.Writer //= os.Stderr
+		ctx    context.Context
+		wg     sync.WaitGroup
+	)
+	ctx, cancel := context.WithCancel(context.Background())
 
 	// Create a new memory bus
 	bus := Bus{}
@@ -201,41 +205,49 @@ func main() {
 	}
 	cpu.Reset()
 
-	// Execute instructions
-	lastTicks := sdl.GetTicks()
-	currentTicks := lastTicks
-	running := true
-	for running {
-		err := cpu.Step()
-		if err != nil {
-			dumpAndExit(&cpu, ram, fmt.Errorf("\nexecution stopped: %s", err))
-		}
+	// Create a channel for GUI events
+	events := make(chan Event, 10)
 
-		// Update GUI
-		switch event := video.Event().(type) {
-		case EventQuit:
-			running = false
-			break
-		case EventKeypress:
-			kbd.Scan(event.Key)
-		}
+	// Run the CPU & pheripherals
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
 
-		// Check devices for interrupts
-		if bus.CheckInterrupts() {
-			cpu.Interrupt()
-		}
-
-		// Wait 50ms and then redraw the screen
-		currentTicks = sdl.GetTicks()
-		if currentTicks-lastTicks > 50 {
-			err = video.Redraw()
+		running := true
+		for running {
+			// Execute a single instruction
+			err := cpu.Step()
 			if err != nil {
-				break
+				dumpAndExit(&cpu, ram, fmt.Errorf("\nexecution stopped: %s", err))
 			}
-			lastTicks = currentTicks
-		}
-	}
 
+			// Handle any GUI events
+			select {
+			case event := <-events:
+				switch e := event.(type) {
+				case EventQuit:
+					running = false
+					break
+				case EventKeypress:
+					kbd.Scan(e.Key)
+				}
+			default:
+			}
+
+			// Check devices for interrupts
+			if bus.CheckInterrupts() {
+				cpu.Interrupt()
+			}
+		}
+
+		// Cancel the context
+		cancel()
+	}()
+
+	// Start the GUI event loop
+	video.EventLoop(ctx, events)
+
+	wg.Wait()
 	dump(&cpu, ram)
 }
 
