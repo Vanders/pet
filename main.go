@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/vanders/pet/mos6502"
@@ -15,28 +16,37 @@ type (
 
 func dumpAndExit(cpu *mos6502.CPU, ram *RAM, err error) {
 	fmt.Println(err)
-	cpu.Dump()
-
-	// Dump the Zero Page
-	for n := 0; n < 256; n = n + 4 {
-		fmt.Fprintf(cpu.Writer,
-			"0x%04x: 0x%02x,\t0x%04x: 0x%02x,\t0x%04x: 0x%02x,\t0x%04x: 0x%02x\n",
-			Word(n),
-			ram.Read(Word(n)),
-			Word(n+1),
-			ram.Read(Word(n+1)),
-			Word(n+2),
-			ram.Read(Word(n+2)),
-			Word(n+3),
-			ram.Read(Word(n+3)))
-	}
-
+	dump(cpu, ram)
 	os.Exit(1)
 }
 
-const romVersion = 4
+func dump(cpu *mos6502.CPU, ram *RAM) {
+	cpu.Dump()
+
+	if cpu.Writer != nil {
+		// Dump the Zero Page
+		for n := 0; n < 256; n = n + 4 {
+			fmt.Fprintf(cpu.Writer,
+				"0x%04x: 0x%02x,\t0x%04x: 0x%02x,\t0x%04x: 0x%02x,\t0x%04x: 0x%02x\n",
+				Word(n),
+				ram.Read(Word(n)),
+				Word(n+1),
+				ram.Read(Word(n+1)),
+				Word(n+2),
+				ram.Read(Word(n+2)),
+				Word(n+3),
+				ram.Read(Word(n+3)))
+		}
+	}
+}
+
+const romVersion = 2
+
+var writer io.Writer
 
 func main() {
+	//writer = os.Stderr
+
 	// Create a new memory bus
 	bus := Bus{}
 
@@ -187,7 +197,7 @@ func main() {
 	cpu := mos6502.CPU{
 		Read:   bus.Read,
 		Write:  bus.Write,
-		Writer: nil, // os.Stderr
+		Writer: writer,
 	}
 	cpu.Reset()
 
@@ -225,6 +235,8 @@ func main() {
 			lastTicks = currentTicks
 		}
 	}
+
+	dump(&cpu, ram)
 }
 
 // Pheripheral Interface Adaptor #1
