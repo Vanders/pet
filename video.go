@@ -376,7 +376,7 @@ func (v *Video) EventLoop(ctx context.Context, events chan<- Event) {
 			break
 		}
 
-		sdlEvent := sdl.WaitEvent()
+		sdlEvent := sdl.PollEvent()
 		switch event := sdlEvent.(type) {
 		case *sdl.TextInputEvent:
 			char := rune(event.Text[0])
@@ -448,6 +448,8 @@ func (v *Video) EventLoop(ctx context.Context, events chan<- Event) {
 			}
 			lastTicks = currentTicks
 		}
+
+		sdl.Delay(10)
 	}
 }
 
