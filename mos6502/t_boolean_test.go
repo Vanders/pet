@@ -10,8 +10,7 @@ func Test_op_ora(t *testing.T) {
 		INS_ORA_ZP
 		INS_ORA_IY
 	*/
-
-	tests := testCases{
+	testCases{
 		testCase{
 			INS_ORA_IM,
 			"immediate (positive)",
@@ -92,8 +91,7 @@ func Test_op_ora(t *testing.T) {
 				ZClear(t, c)
 			},
 		},
-	}
-	tests.Run(t)
+	}.Run(t)
 }
 
 func Test_op_eor(t *testing.T) {
@@ -101,8 +99,7 @@ func Test_op_eor(t *testing.T) {
 		INS_EOR_IM
 		INS_EOR_ZP
 	*/
-
-	tests := testCases{
+	testCases{
 		testCase{
 			INS_ORA_IM,
 			"immediate (positive)",
@@ -118,6 +115,5 @@ func Test_op_eor(t *testing.T) {
 				ZClear(t, c)
 			},
 		},
-	}
-	tests.Run(t)
+	}.Run(t)
 }
