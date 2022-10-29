@@ -205,6 +205,13 @@ func CompareY(t *testing.T, c *CPU, expected Byte) {
 	}
 }
 
+func CompareSP(t *testing.T, c *CPU, expected Byte) {
+	sp := c.Registers.S.Get()
+	if sp != expected {
+		t.Errorf("SP incorrect: expected 0x%02x, got 0x%02x", expected, sp)
+	}
+}
+
 // Helpers for checking memory contents
 func CompareMem(t *testing.T, m *fakeMem, addr Word, expected Byte) {
 	data := m.GetByte(addr)
