@@ -5,21 +5,21 @@ import (
 )
 
 func Test_op_ora(t *testing.T) {
-	/*
-		INS_ORA_IM
-		INS_ORA_ZP
-		INS_ORA_IY
-	*/
+	//
+	//	INS_ORA_IM
+	//	INS_ORA_ZP
+	//	INS_ORA_IY
+	//
 	testCases{
 		testCase{
 			INS_ORA_IM,
 			"immediate (positive)",
-			/* Setup */
+			// Setup
 			func(t *testing.T, c *CPU, m *fakeMem) {
 				c.Registers.A.Set(0x0f)
 				m.WriteByte(0x70)
 			},
-			/* Check */
+			// Check
 			func(t *testing.T, c *CPU, m *fakeMem) {
 				CompareA(t, c, 0x7f)
 				NClear(t, c)
@@ -29,12 +29,12 @@ func Test_op_ora(t *testing.T) {
 		testCase{
 			INS_ORA_IM,
 			"immediate (negative)",
-			/* Setup */
+			// Setup
 			func(t *testing.T, c *CPU, m *fakeMem) {
 				c.Registers.A.Set(0xaa)
 				m.WriteByte(0x55)
 			},
-			/* Check */
+			// Check
 			func(t *testing.T, c *CPU, m *fakeMem) {
 				CompareA(t, c, 0xff)
 				NSet(t, c)
@@ -44,12 +44,12 @@ func Test_op_ora(t *testing.T) {
 		testCase{
 			INS_ORA_IM,
 			"immediate (zero)",
-			/* Setup */
+			// Setup
 			func(t *testing.T, c *CPU, m *fakeMem) {
 				c.Registers.A.Set(0x00)
 				m.WriteByte(0x00)
 			},
-			/* Check */
+			// Check
 			func(t *testing.T, c *CPU, m *fakeMem) {
 				CompareA(t, c, 0x00)
 				NClear(t, c)
@@ -59,13 +59,13 @@ func Test_op_ora(t *testing.T) {
 		testCase{
 			INS_ORA_ZP,
 			"zero page",
-			/* Setup */
+			// Setup
 			func(t *testing.T, c *CPU, m *fakeMem) {
 				c.Registers.A.Set(0xaa)
 				m.SetByte(0x01, 0x55) // ZP $01=$55
 				m.WriteByte(0x01)     // Read ZP $01
 			},
-			/* Check */
+			// Check
 			func(t *testing.T, c *CPU, m *fakeMem) {
 				CompareA(t, c, 0xff)
 				NSet(t, c)
@@ -75,7 +75,7 @@ func Test_op_ora(t *testing.T) {
 		testCase{
 			INS_ORA_IY,
 			"indirect, y",
-			/* Setup */
+			// Setup
 			func(t *testing.T, c *CPU, m *fakeMem) {
 				c.Registers.A.Set(0xaa)
 				c.Registers.Y.Set(0x01) // Y = 0x01
@@ -84,7 +84,7 @@ func Test_op_ora(t *testing.T) {
 				m.SetWord(0x0001, 0x0300) // ...points to 0x0300
 				m.SetByte(0x0301, 0x55)   // ...plus Y, reads 0x0301 = 0x55
 			},
-			/* Check */
+			// Check
 			func(t *testing.T, c *CPU, m *fakeMem) {
 				CompareA(t, c, 0xff)
 				NSet(t, c)
@@ -95,20 +95,20 @@ func Test_op_ora(t *testing.T) {
 }
 
 func Test_op_eor(t *testing.T) {
-	/*
-		INS_EOR_IM
-		INS_EOR_ZP
-	*/
+	//
+	//	INS_EOR_IM
+	//	INS_EOR_ZP
+	//
 	testCases{
 		testCase{
 			INS_EOR_IM,
 			"immediate (positive)",
-			/* Setup */
+			// Setup
 			func(t *testing.T, c *CPU, m *fakeMem) {
 				c.Registers.A.Set(0xaa)
 				m.WriteByte(0xa0)
 			},
-			/* Check */
+			// Check
 			func(t *testing.T, c *CPU, m *fakeMem) {
 				CompareA(t, c, 0x0a)
 				NClear(t, c)
@@ -118,12 +118,12 @@ func Test_op_eor(t *testing.T) {
 		testCase{
 			INS_EOR_IM,
 			"immediate (negative)",
-			/* Setup */
+			// Setup
 			func(t *testing.T, c *CPU, m *fakeMem) {
 				c.Registers.A.Set(0xaa)
 				m.WriteByte(0x0a)
 			},
-			/* Check */
+			// Check
 			func(t *testing.T, c *CPU, m *fakeMem) {
 				CompareA(t, c, 0xa0)
 				NSet(t, c)
@@ -133,12 +133,12 @@ func Test_op_eor(t *testing.T) {
 		testCase{
 			INS_EOR_IM,
 			"immediate (zero)",
-			/* Setup */
+			// Setup
 			func(t *testing.T, c *CPU, m *fakeMem) {
 				c.Registers.A.Set(0xaa)
 				m.WriteByte(0xaa)
 			},
-			/* Check */
+			// Check
 			func(t *testing.T, c *CPU, m *fakeMem) {
 				CompareA(t, c, 0x00)
 				NClear(t, c)
@@ -148,13 +148,13 @@ func Test_op_eor(t *testing.T) {
 		testCase{
 			INS_EOR_ZP,
 			"zero page",
-			/* Setup */
+			// Setup
 			func(t *testing.T, c *CPU, m *fakeMem) {
 				c.Registers.A.Set(0xaa)
 				m.SetByte(0x01, 0xa0) // ZP $01=$55
 				m.WriteByte(0x01)     // Read ZP $01
 			},
-			/* Check */
+			// Check
 			func(t *testing.T, c *CPU, m *fakeMem) {
 				CompareA(t, c, 0x0a)
 				NClear(t, c)
