@@ -1,6 +1,9 @@
 .PHONY: all
 
-all: main
+all: pet
 
-main: *.go mos6502/*.go
+pet: *.go mos6502/*.go
 	go build -o pet *.go
+
+test:
+	go test -v ./...
