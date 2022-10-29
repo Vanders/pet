@@ -81,6 +81,22 @@ func main() {
 
 	// Load ROMs
 	switch *romVersion {
+	case 0: // Special case for diagnostic ROMs
+		u2 := &ROM{
+			Base: 0xf000,
+			Size: 0x800, // 2k
+		}
+		u2.Reset()
+		u2.Load("roms/U-2 DIA")
+		bus.Map(u2)
+
+		u3 := &ROM{
+			Base: 0xf800,
+			Size: 0x800, // 2k
+		}
+		u3.Reset()
+		u3.Load("roms/U-3 DIA")
+		bus.Map(u3)
 	case 2:
 		basicLo := &ROM{
 			Base: 0xc000,
