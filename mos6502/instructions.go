@@ -49,7 +49,11 @@ func (c *CPU) op_adc(i Instruction) error {
 
 // AND Memory with Accumulator
 func (c *CPU) op_and(i Instruction) error {
-	data := c.FetchByteImmediate()
+	data, err := c.FetchByteMode(i.Mode)
+	if err != nil {
+		return err
+	}
+
 	a := c.Registers.A.Get() & data
 	c.Registers.A.Set(a)
 	c.Registers.P.Update(a)
