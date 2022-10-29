@@ -4,8 +4,8 @@ import "testing"
 
 // Start of executable code, or data, after the zero page
 const (
-	exeStart  Word = 0x200
-	dataStart Word = 0x300
+	exeStart  Word = 0x0200
+	dataStart Word = 0x0300
 	memMax    Word = 0xffff
 )
 

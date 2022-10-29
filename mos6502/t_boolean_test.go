@@ -80,9 +80,9 @@ func Test_op_ora(t *testing.T) {
 				c.Registers.A.Set(0xaa)
 				c.Registers.Y.Set(0x01) // Y = 0x01
 
-				m.WriteWord(0x01)         // ZP $01
-				m.SetWord(0x0001, 0x0300) // ...points to 0x0300
-				m.SetByte(0x0301, 0x55)   // ...plus Y, reads 0x0301 = 0x55
+				m.WriteWord(0x01)            // ZP $01
+				m.SetWord(0x0001, dataStart) // ...points to 0x0300
+				m.SetByte(dataStart+1, 0x55) // ...plus Y, reads 0x0301 = 0x55
 			},
 			// Check
 			func(t *testing.T, c *CPU, m *fakeMem) {
