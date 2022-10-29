@@ -97,16 +97,46 @@ func newCPU(m *fakeMem) *CPU {
 /*
 	Each test must define the following:
 
+- An opcode to execute
 - A name
-- An instruction to execute (just the address mode is required)
 - A setup function (initial state)
 - A check function (final state)
 */
 type testCase struct {
+	op    Opcode
 	name  string
-	ins   Instruction
 	setup func(*testing.T, *CPU, *fakeMem)
 	check func(*testing.T, *CPU, *fakeMem)
+}
+
+type testCases []testCase
+
+func (tests testCases) Run(t *testing.T) {
+	m := newMem()
+	c := newCPU(m)
+
+	for _, testCase := range tests {
+		t.Run(testCase.name, func(t *testing.T) {
+			testCase.setup(t, c, m)
+			Call(t, c, testCase.op)
+			testCase.check(t, c, m)
+		})
+
+		m.Reset()
+		c.Reset()
+	}
+}
+
+// Call the instruction from the given opcode
+func Call(t *testing.T, c *CPU, opcode Opcode) {
+	ins, ok := c.instructionSet[Opcode(opcode)]
+	if !ok {
+		t.Errorf("invalid or unknown instruction 0x%2x", opcode)
+	}
+	err := ins.F(ins)
+	if err != nil {
+		t.Error(err)
+	}
 }
 
 // Helpers for checking various CPU flags

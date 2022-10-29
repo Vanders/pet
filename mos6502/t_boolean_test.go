@@ -11,13 +11,10 @@ func Test_op_ora(t *testing.T) {
 		INS_ORA_IY
 	*/
 
-	testCases := []testCase{
-		/* INS_ORA_IM */
+	tests := testCases{
 		testCase{
+			INS_ORA_IM,
 			"immediate (positive)",
-			Instruction{
-				Mode: IMMEDIATE,
-			},
 			/* Setup */
 			func(t *testing.T, c *CPU, m *fakeMem) {
 				c.Registers.A.Set(0x0f)
@@ -31,10 +28,8 @@ func Test_op_ora(t *testing.T) {
 			},
 		},
 		testCase{
+			INS_ORA_IM,
 			"immediate (negative)",
-			Instruction{
-				Mode: IMMEDIATE,
-			},
 			/* Setup */
 			func(t *testing.T, c *CPU, m *fakeMem) {
 				c.Registers.A.Set(0xaa)
@@ -48,10 +43,8 @@ func Test_op_ora(t *testing.T) {
 			},
 		},
 		testCase{
+			INS_ORA_IM,
 			"immediate (zero)",
-			Instruction{
-				Mode: IMMEDIATE,
-			},
 			/* Setup */
 			func(t *testing.T, c *CPU, m *fakeMem) {
 				c.Registers.A.Set(0x00)
@@ -65,11 +58,8 @@ func Test_op_ora(t *testing.T) {
 			},
 		},
 		testCase{
-			/* INS_ORA_ZP */
+			INS_ORA_ZP,
 			"zero page",
-			Instruction{
-				Mode: ZERO_PAGE,
-			},
 			/* Setup */
 			func(t *testing.T, c *CPU, m *fakeMem) {
 				c.Registers.A.Set(0xaa)
@@ -84,11 +74,8 @@ func Test_op_ora(t *testing.T) {
 			},
 		},
 		testCase{
-			/* INS_ORA_IY */
+			INS_ORA_IY,
 			"indirect, y",
-			Instruction{
-				Mode: INDIRECT_Y,
-			},
 			/* Setup */
 			func(t *testing.T, c *CPU, m *fakeMem) {
 				c.Registers.A.Set(0xaa)
@@ -106,25 +93,7 @@ func Test_op_ora(t *testing.T) {
 			},
 		},
 	}
-
-	m := newMem()
-	c := newCPU(m)
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			tc.setup(t, c, m)
-
-			err := c.op_ora(tc.ins)
-			if err != nil {
-				t.Error(err)
-			}
-
-			tc.check(t, c, m)
-		})
-
-		m.Reset()
-		c.Reset()
-	}
+	tests.Run(t)
 }
 
 func Test_op_eor(t *testing.T) {
@@ -133,13 +102,10 @@ func Test_op_eor(t *testing.T) {
 		INS_EOR_ZP
 	*/
 
-	testCases := []testCase{
-		/* INS_ORA_IM */
+	tests := testCases{
 		testCase{
+			INS_ORA_IM,
 			"immediate (positive)",
-			Instruction{
-				Mode: IMMEDIATE,
-			},
 			/* Setup */
 			func(t *testing.T, c *CPU, m *fakeMem) {
 				c.Registers.A.Set(0x0f)
@@ -153,23 +119,5 @@ func Test_op_eor(t *testing.T) {
 			},
 		},
 	}
-
-	m := newMem()
-	c := newCPU(m)
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			tc.setup(t, c, m)
-
-			err := c.op_eor(tc.ins)
-			if err != nil {
-				t.Error(err)
-			}
-
-			tc.check(t, c, m)
-		})
-
-		m.Reset()
-		c.Reset()
-	}
+	tests.Run(t)
 }
