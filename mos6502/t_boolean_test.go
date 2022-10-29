@@ -101,16 +101,62 @@ func Test_op_eor(t *testing.T) {
 	*/
 	testCases{
 		testCase{
-			INS_ORA_IM,
+			INS_EOR_IM,
 			"immediate (positive)",
 			/* Setup */
 			func(t *testing.T, c *CPU, m *fakeMem) {
-				c.Registers.A.Set(0x0f)
-				m.WriteByte(0x70)
+				c.Registers.A.Set(0xaa)
+				m.WriteByte(0xa0)
 			},
 			/* Check */
 			func(t *testing.T, c *CPU, m *fakeMem) {
-				CompareA(t, c, 0x7f)
+				CompareA(t, c, 0x0a)
+				NClear(t, c)
+				ZClear(t, c)
+			},
+		},
+		testCase{
+			INS_EOR_IM,
+			"immediate (negative)",
+			/* Setup */
+			func(t *testing.T, c *CPU, m *fakeMem) {
+				c.Registers.A.Set(0xaa)
+				m.WriteByte(0x0a)
+			},
+			/* Check */
+			func(t *testing.T, c *CPU, m *fakeMem) {
+				CompareA(t, c, 0xa0)
+				NSet(t, c)
+				ZClear(t, c)
+			},
+		},
+		testCase{
+			INS_EOR_IM,
+			"immediate (zero)",
+			/* Setup */
+			func(t *testing.T, c *CPU, m *fakeMem) {
+				c.Registers.A.Set(0xaa)
+				m.WriteByte(0xaa)
+			},
+			/* Check */
+			func(t *testing.T, c *CPU, m *fakeMem) {
+				CompareA(t, c, 0x00)
+				NClear(t, c)
+				ZSet(t, c)
+			},
+		},
+		testCase{
+			INS_EOR_ZP,
+			"zero page",
+			/* Setup */
+			func(t *testing.T, c *CPU, m *fakeMem) {
+				c.Registers.A.Set(0xaa)
+				m.SetByte(0x01, 0xa0) // ZP $01=$55
+				m.WriteByte(0x01)     // Read ZP $01
+			},
+			/* Check */
+			func(t *testing.T, c *CPU, m *fakeMem) {
+				CompareA(t, c, 0x0a)
 				NClear(t, c)
 				ZClear(t, c)
 			},
