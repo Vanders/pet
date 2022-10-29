@@ -4,8 +4,9 @@ import "testing"
 
 // Start of executable code, or data, after the zero page
 const (
-	exeStart Word = 0x200
-	memMax   Word = 0xffff
+	exeStart  Word = 0x200
+	dataStart Word = 0x300
+	memMax    Word = 0xffff
 )
 
 // "fake" memory that provides a bunch of helper methods
@@ -187,5 +188,27 @@ func CompareA(t *testing.T, c *CPU, expected Byte) {
 	a := c.Registers.A.Get()
 	if a != expected {
 		t.Errorf("A incorrect: expected 0x%02x, got 0x%02x", expected, a)
+	}
+}
+
+func CompareX(t *testing.T, c *CPU, expected Byte) {
+	x := c.Registers.X.Get()
+	if x != expected {
+		t.Errorf("X incorrect: expected 0x%02x, got 0x%02x", expected, x)
+	}
+}
+
+func CompareY(t *testing.T, c *CPU, expected Byte) {
+	y := c.Registers.Y.Get()
+	if y != expected {
+		t.Errorf("Y incorrect: expected 0x%02x, got 0x%02x", expected, y)
+	}
+}
+
+// Helpers for checking memory contents
+func CompareMem(t *testing.T, m *fakeMem, addr Word, expected Byte) {
+	data := m.GetByte(addr)
+	if data != expected {
+		t.Errorf("addr 0x%04x incorrect: expected 0x%02x, got 0x%02x", addr, expected, data)
 	}
 }
