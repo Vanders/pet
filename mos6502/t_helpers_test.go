@@ -168,6 +168,20 @@ func ZClear(t *testing.T, c *CPU) {
 	}
 }
 
+func CSet(t *testing.T, c *CPU) {
+	C := c.Registers.P.C
+	if C != true {
+		t.Error("carry flag is not set on carry")
+	}
+}
+
+func CClear(t *testing.T, c *CPU) {
+	C := c.Registers.P.C
+	if C != false {
+		t.Error("carry flag is set on non-carry")
+	}
+}
+
 // Helpers for checking CPU registers
 func CompareA(t *testing.T, c *CPU, expected Byte) {
 	a := c.Registers.A.Get()
