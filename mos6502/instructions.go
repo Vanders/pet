@@ -10,6 +10,7 @@ var (
 )
 
 // Add Memory to Accumulator with Carry
+// See http://www.righto.com/2012/12/the-6502-overflow-flag-explained.html for an explanation
 func (c *CPU) op_adc(i Instruction) error {
 	data, err := c.FetchByteMode(i.Mode)
 	if err != nil {
@@ -826,31 +827,46 @@ func (c *CPU) op_ora(i Instruction) error {
 }
 
 // Subtract Memory from Accumulator with Borrow
+// See http://www.righto.com/2012/12/the-6502-overflow-flag-explained.html for an explanation
 func (c *CPU) op_sbc(i Instruction) error {
 	data, err := c.FetchByteMode(i.Mode)
 	if err != nil {
 		return err
 	}
 
-	var res Word
+	var resWord Word
 
-	// add A to NOT(memory), plus 1 for the carry flag (if set)
+	// Calculate A - input + borrow (^carry)
 	a := c.Registers.A.Get()
+
+	// "Borrow" is the *inverse* of the carry flag E.g. if carry is set, there is no borrow
 	if c.Registers.P.C {
-		res = Word(a) + Word(^data) + 1
+		// No borrow
+		resWord = Word(a) + Word(255-data) + 1
 	} else {
-		res = Word(a) + Word(^data)
+		// Borrow
+		resWord = Word(a) + Word(255-data)
+	}
+	resByte := Byte(resWord & 0xff)
+
+	// Update A & flags for Negative & Zero
+	c.Registers.A.Set(resByte)
+	c.Registers.P.Update(resByte)
+
+	// Check for borrow (^carry)
+	if resWord > 0xff {
+		c.Registers.P.SetCarry(true)
+	} else {
+		c.Registers.P.SetCarry(false)
 	}
 
-	// check sign bits match
-	c.Registers.P.SetOverflow((data & BIT_7) != (a & BIT_7))
-
-	// check overflow & set carry flag if needed
-	c.Registers.P.SetCarry(res > 0xff)
-
-	// update accumulator
-	c.Registers.A.Set(Byte(res & 0xff))
-	c.Registers.P.Update(c.Registers.A.Get())
+	// Check for overflow. If the sign of both inputs is different from the sign
+	// of the result, there was an overflow.
+	if ((a^resByte)&((255-data)^resByte))&0x80 != 0 {
+		c.Registers.P.SetOverflow(true)
+	} else {
+		c.Registers.P.SetOverflow(false)
+	}
 
 	return nil
 }
