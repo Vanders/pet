@@ -48,9 +48,9 @@ t_boolean_test.go
 
 Shift & Rotate Instructions
 
-✗ ASL arithmetic shift left
+✓ ASL arithmetic shift left
 ✗ LSR logical shift right
-✗ ROL rotate left
+✓ ROL rotate left
 ✗ ROR rotate right
 
 Flag Instructions
