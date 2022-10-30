@@ -61,9 +61,13 @@ type Flags struct {
 
 // Reset sets the initial state of the flags at CPU reset
 func (f *Flags) Reset() {
-	f.B = true
-	f.D = false
+	f.C = false
+	f.Z = false
 	f.I = true
+	f.D = false
+	f.B = true
+	f.V = false
+	f.N = false
 }
 
 const (
