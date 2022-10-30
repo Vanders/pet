@@ -198,7 +198,7 @@ func Test_op_rol(t *testing.T) {
 
 				CClear(t, c)
 				NClear(t, c)
-				ZClear(t, c)
+				ZSet(t, c)
 			},
 		},
 		testCase{
