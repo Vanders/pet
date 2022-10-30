@@ -16,33 +16,34 @@ func (c *CPU) op_adc(i Instruction) error {
 		return err
 	}
 
-	var res Word
+	var resWord Word
 
+	// Calculate A + input + carry
 	a := c.Registers.A.Get()
-	sameSign := (data & BIT_7) == (a & BIT_7)
+	resWord = Word(a) + Word(data)
+	if c.Registers.P.C {
+		resWord += 0x01
+	}
+	resByte := Byte(resWord & 0xff)
 
-	// add A to memory, plus 1 for the carry flag (if set)
-	res = Word(a) + Word(data)
-	if c.Registers.P.C == true {
-		res += 1
+	// Update A & flags for Negative & Zero
+	c.Registers.A.Set(resByte)
+	c.Registers.P.Update(resByte)
+
+	// Check for carry
+	if resWord > 0xff {
+		c.Registers.P.SetCarry(true)
+	} else {
+		c.Registers.P.SetCarry(false)
 	}
 
-	// if the inputs were the same sign check for overflow
-	if sameSign {
-		// does the result sign match the input sign? if not we overflowed
-		c.Registers.P.SetOverflow((data & BIT_7) != (a & BIT_7))
+	// Check for overflow. If the sign of both inputs is different from the sign
+	// of the result, there was an overflow.
+	if ((a^resByte)&(data^resByte))&0x80 != 0 {
+		c.Registers.P.SetOverflow(true)
 	} else {
 		c.Registers.P.SetOverflow(false)
 	}
-
-	// update accumulator
-	a = Byte(res & 0xff)
-	c.Registers.A.Set(a)
-
-	// check overflow & set carry flag if needed
-	c.Registers.P.SetCarry(res > 0xff)
-
-	c.Registers.P.Update(a)
 
 	return nil
 }
