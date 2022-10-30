@@ -47,7 +47,7 @@ func Test_op_adc(t *testing.T) {
 				CompareA(t, c, 0xa0)
 
 				CClear(t, c)
-				NClear(t, c)
+				NSet(t, c)
 				ZClear(t, c)
 				VSet(t, c)
 			},
@@ -107,7 +107,7 @@ func Test_op_adc(t *testing.T) {
 				CompareA(t, c, 0xe0)
 
 				CClear(t, c)
-				NClear(t, c)
+				NSet(t, c)
 				ZClear(t, c)
 				VClear(t, c)
 			},
