@@ -183,6 +183,20 @@ func CClear(t *testing.T, c *CPU) {
 	}
 }
 
+func VSet(t *testing.T, c *CPU) {
+	V := c.Registers.P.V
+	if V != true {
+		t.Error("overflow flag is not set on overflow")
+	}
+}
+
+func VClear(t *testing.T, c *CPU) {
+	V := c.Registers.P.V
+	if V != false {
+		t.Error("overflow flag is set on non-overflow")
+	}
+}
+
 // Helpers for checking CPU registers
 func CompareA(t *testing.T, c *CPU, expected Byte) {
 	a := c.Registers.A.Get()
