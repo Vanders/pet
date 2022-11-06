@@ -18,7 +18,7 @@ const (
 )
 
 var (
-	petscii = [256]rune{
+	petscii = map[Byte]rune{
 		0x00: '@',
 		0x01: 'A',
 		0x02: 'B',
@@ -342,7 +342,11 @@ func (v *Video) Redraw() error {
 		for x := 0; x < 40; x++ {
 			addr := Word(VID_MEM) + Word(y*40) + Word(x)
 			data := v.Read(addr)
-			lineBuffer.WriteString(string(petscii[data]))
+			char, ok := petscii[data]
+			if !ok {
+				char = '?'
+			}
+			lineBuffer.WriteString(string(char))
 		}
 
 		// Render & draw the line
