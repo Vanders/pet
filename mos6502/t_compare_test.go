@@ -6,8 +6,8 @@ import (
 
 func Test_op_cmp(t *testing.T) {
 	//
-	//	INS_CMP_AB
 	//	INS_CMP_IM
+	//	INS_CMP_AB
 	//	INS_CMP_ZP
 	//	INS_CMP_IY
 	//	INS_CMP_ABY
@@ -15,16 +15,16 @@ func Test_op_cmp(t *testing.T) {
 	//
 	testCases{
 		testCase{
-			INS_CMP_AB,
-			"absolute (less than)",
+			INS_CMP_IM,
+			"immediate (less than, positive)",
 			// Setup
 			func(t *testing.T, c *CPU, m *fakeMem) {
-				c.Registers.A.Set(0x7f)
-				m.WriteByte(0x01)
+				c.Registers.A.Set(0x01)
+				m.WriteByte(0xff)
 			},
 			// Check
 			func(t *testing.T, c *CPU, m *fakeMem) {
-				CompareA(t, c, 0x7f)
+				CompareA(t, c, 0x01)
 
 				CClear(t, c)
 				NClear(t, c)
@@ -32,8 +32,25 @@ func Test_op_cmp(t *testing.T) {
 			},
 		},
 		testCase{
-			INS_CMP_AB,
-			"absolute (equals)",
+			INS_CMP_IM,
+			"immediate (less than, negative)",
+			// Setup
+			func(t *testing.T, c *CPU, m *fakeMem) {
+				c.Registers.A.Set(0x01)
+				m.WriteByte(0x7f)
+			},
+			// Check
+			func(t *testing.T, c *CPU, m *fakeMem) {
+				CompareA(t, c, 0x01)
+
+				CClear(t, c)
+				NSet(t, c)
+				ZClear(t, c)
+			},
+		},
+		testCase{
+			INS_CMP_IM,
+			"immediate (equals)",
 			// Setup
 			func(t *testing.T, c *CPU, m *fakeMem) {
 				c.Registers.A.Set(0x7f)
@@ -49,16 +66,16 @@ func Test_op_cmp(t *testing.T) {
 			},
 		},
 		testCase{
-			INS_CMP_AB,
-			"absolute (more than)",
+			INS_CMP_IM,
+			"immediate (more than)",
 			// Setup
 			func(t *testing.T, c *CPU, m *fakeMem) {
-				c.Registers.A.Set(0x01)
-				m.WriteByte(0x7f)
+				c.Registers.A.Set(0x7f)
+				m.WriteByte(0x01)
 			},
 			// Check
 			func(t *testing.T, c *CPU, m *fakeMem) {
-				CompareA(t, c, 0x01)
+				CompareA(t, c, 0x7f)
 
 				CSet(t, c)
 				NClear(t, c)
