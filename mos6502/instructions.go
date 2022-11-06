@@ -235,7 +235,7 @@ func (c *CPU) op_pla(i Instruction) error {
 // Pull Processor Status from Stack
 func (c *CPU) op_plp(i Instruction) error {
 	data := c.PopByte()
-	c.Registers.P.SetByte(data & 0xcf) // Ignore bits 6 & 5
+	c.Registers.P.SetByte(data)
 
 	return nil
 }
