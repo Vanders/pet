@@ -64,7 +64,8 @@ func (c *CPU) FetchByteZeroPage() Byte {
 
 func (c *CPU) FetchByteZeroPageX() Byte {
 	zpa := c.FetchByte()
-	return c.ReadByte(Word(zpa) + Word(c.Registers.X.Get()))
+	addr := Word(zpa + c.Registers.X.Get()&0xff)
+	return c.ReadByte(addr)
 }
 
 func (c *CPU) FetchByteIndirectY() Byte {
@@ -131,11 +132,13 @@ func (c *CPU) WriteByteZeroPage(zpa Byte, data Byte) {
 }
 
 func (c *CPU) WriteByteZeroPageX(zpa Byte, data Byte) {
-	c.WriteByte(Word(zpa)+Word(c.Registers.X.Get()), data)
+	addr := Word(zpa + c.Registers.X.Get()&0xff)
+	c.WriteByte(addr, data)
 }
 
 func (c *CPU) WriteByteIndirectX(base Byte, data Byte) {
-	c.WriteByte(Word(base)+Word(c.Registers.Y.Get()), data)
+	addr := c.ReadWord(Word(base) + Word(c.Registers.X.Get()))
+	c.WriteByte(addr, data)
 }
 
 func (c *CPU) WriteByteIndirectY(base Byte, data Byte) {
