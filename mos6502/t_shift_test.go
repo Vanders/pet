@@ -302,7 +302,22 @@ func Test_op_ror(t *testing.T) {
 				ZClear(t, c)
 			},
 		},
+		testCase{
+			INS_ROR_AC,
+			"accumulator (positive, no carry in, carry out)",
+			// Setup
+			func(t *testing.T, c *CPU, m *fakeMem) {
+				c.Registers.A.Set(0xff)
+			},
+			// Check
+			func(t *testing.T, c *CPU, m *fakeMem) {
+				CompareA(t, c, 0x7f)
 
+				CSet(t, c)
+				NClear(t, c)
+				ZClear(t, c)
+			},
+		},
 		testCase{
 			INS_ROR_AC,
 			"accumulator (negative, carry in, no carry out)",
@@ -331,6 +346,23 @@ func Test_op_ror(t *testing.T) {
 			// Check
 			func(t *testing.T, c *CPU, m *fakeMem) {
 				CompareA(t, c, 0xbf)
+
+				CSet(t, c)
+				NSet(t, c)
+				ZClear(t, c)
+			},
+		},
+		testCase{
+			INS_ROR_AC,
+			"accumulator (negative, carry through)",
+			// Setup
+			func(t *testing.T, c *CPU, m *fakeMem) {
+				c.Registers.P.C = true
+				c.Registers.A.Set(0xff)
+			},
+			// Check
+			func(t *testing.T, c *CPU, m *fakeMem) {
+				CompareA(t, c, 0xff)
 
 				CSet(t, c)
 				NSet(t, c)
