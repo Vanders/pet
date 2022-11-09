@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"image/color"
-	"os"
 
 	"github.com/veandco/go-sdl2/sdl"
 )
@@ -18,40 +17,30 @@ const (
 	VID_MEM      = 0x8000
 )
 
-type VideoROM [2048]Byte
-
-func (r *VideoROM) Load(filename string) error {
-	d, err := os.ReadFile(filename)
-	if err != nil {
-		return err
-	}
-	for n := range d {
-		r[n] = Byte(d[n])
-	}
-
-	return nil
-}
-
 type Video struct {
 	Read    func(address Word) Byte // Read a single byte from the bus
 	VIA_CB2 func() Byte             // Returns the current status of the VIA CB2 line
 	PIA_CB1 func(bool)              // Notify PIA of retrace via. the CB1 line
 
-	VRom VideoROM
+	VRom *ROM // Character generator ROM
 
 	lastChar rune
 	window   *sdl.Window
 }
 
 func (v *Video) Reset() error {
-	v.VRom = VideoROM{}
-	err := v.VRom.Load("roms/char-901447-10.bin")
-	if err != nil {
-		return err
+	/* The video ROM is special as it is not mapped to the main memory bus like
+	the other ROMS. Hence, it has a size but it's base "address" is 0x0000, and
+	the video circuitry/routine generates an address directly into the ROM.
+	*/
+	v.VRom = &ROM{
+		Size: 0x800, // 2k
 	}
+	v.VRom.Reset()
+	v.VRom.Load("roms/char-901447-10.bin")
 
 	// Initialize SDL & create a window
-	err = sdl.Init(sdl.INIT_VIDEO)
+	err := sdl.Init(sdl.INIT_VIDEO)
 	if err != nil {
 		return err
 	}
@@ -107,7 +96,7 @@ func (v *Video) Redraw() error {
 				if v.VIA_CB2() != 0 {
 					romAddr |= 0x400
 				}
-				bits := v.VRom[romAddr]
+				bits := v.VRom.Read(romAddr)
 
 				for p := int32(0); p < 8; p++ {
 					if (bits<<p)&0x80 != invert {
