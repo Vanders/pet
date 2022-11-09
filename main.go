@@ -190,21 +190,21 @@ func main() {
 		KbdBuffer: buf,
 	}
 	pia = &PIA{
-		Base: 0xe810,
+		Base:      0xe810,
+		PortRead:  pia1.PortRead,
+		PortWrite: pia1.PortWrite,
+		IRQ:       pia1.IRQ,
 	}
-	pia.PortRead = pia1.PortRead
-	pia.PortWrite = pia1.PortWrite
-	pia.IRQ = pia1.IRQ
 	bus.Map(pia)
 
 	// PIA2
 	pia2 := &PIA2{}
 	pia = &PIA{
-		Base: 0xe820,
+		Base:      0xe820,
+		PortRead:  pia2.PortRead,
+		PortWrite: pia2.PortWrite,
+		IRQ:       pia2.IRQ,
 	}
-	pia.PortRead = pia2.PortRead
-	pia.PortWrite = pia2.PortWrite
-	pia.IRQ = pia2.IRQ
 	bus.Map(pia)
 
 	// VIA
