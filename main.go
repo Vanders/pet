@@ -213,17 +213,34 @@ func main() {
 	}
 	bus.Map(via)
 
-	// Start video
-	video := Video{
+	// Initialise video
+
+	/* The character ROM is special as it is not mapped to the main memory bus
+	like the other ROMS. Hence, it has a size but it's base "address" is 0x0000
+	and the video circuitry/routine generates an address directly into the ROM.
+	*/
+	charROM := &ROM{
+		Size: 0x800, // 2k
+	}
+	charROM.Reset()
+	charROM.Load("roms/char-901447-10.bin")
+
+	video := &Video{
 		Read:    bus.Read,
 		VIA_CB2: via.CB2,
 		PIA_CB1: pia1.CB1,
+		ROM:     charROM,
 	}
-	err := video.Reset()
+
+	// Start GUI
+	gui := GUI{
+		Video: video,
+	}
+	err := gui.Init()
 	if err != nil {
 		panic(err)
 	}
-	defer video.Stop()
+	defer gui.Stop()
 
 	// Initialise the CPU & connect it to the bus
 	cpu := mos6502.CPU{
@@ -273,7 +290,7 @@ func main() {
 	}()
 
 	// Start the GUI event loop
-	video.EventLoop(ctx, events)
+	gui.EventLoop(ctx, events)
 
 	wg.Wait()
 	dump(&cpu, ram)
