@@ -33,7 +33,10 @@ func (r *VideoROM) Load(filename string) error {
 }
 
 type Video struct {
-	Read func(address Word) Byte // Read a single byte from the bus
+	Read    func(address Word) Byte // Read a single byte from the bus
+	VIA_CB2 func() Byte             // Returns the current status of the VIA CB2 line
+	PIA_CB1 func(bool)              // Notify PIA of retrace via. the CB1 line
+
 	VRom VideoROM
 
 	lastChar rune
@@ -96,15 +99,18 @@ func (v *Video) Redraw() error {
 			scr_x = 0
 			for x := int32(borderLeft); scr_x < scr_w; x += 10 {
 				char := line[scr_x]
+				// If high bit of vmem is set, invert the video
+				invert := char & 0x80
+
 				romAddr := Word(char&0x7f)<<3 | Word(l&0x07)
-				/*
-					if char > 127 {
-						romAddr |= 0x400
-					}
-				*/
+				// If VIA CB2 is set, set the high bit (A10) of the video ROM address
+				if v.VIA_CB2() != 0 {
+					romAddr |= 0x400
+				}
 				bits := v.VRom[romAddr]
+
 				for p := int32(0); p < 8; p++ {
-					if (bits<<p)&0x80 != 0 {
+					if (bits<<p)&0x80 != invert {
 						surface.Set(int(x+p+1), int(y+l+1), green)
 					}
 				}
@@ -198,10 +204,17 @@ func (v *Video) EventLoop(ctx context.Context, events chan<- Event) {
 		// Wait 50ms and then redraw the screen
 		currentTicks = sdl.GetTicks()
 		if currentTicks > lastTicks+50 {
+			// Start retrace interrupt
+			v.PIA_CB1(true)
+
 			err := v.Redraw()
 			if err != nil {
 				break
 			}
+
+			// End retrace interrupt
+			v.PIA_CB1(false)
+
 			lastTicks = currentTicks
 		}
 

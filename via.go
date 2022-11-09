@@ -92,3 +92,10 @@ func (v *VIA) Write(address Word, data Byte) {
 		v.portAOut = data
 	}
 }
+
+// Additional helper functions for exposing specific lines
+
+// Return the current state of the CB2 line (Peripheral Control Register bit 2)
+func (v *VIA) CB2() Byte {
+	return Byte((v.peripheral & 0x02) >> 1)
+}

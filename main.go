@@ -215,7 +215,9 @@ func main() {
 
 	// Start video
 	video := Video{
-		Read: bus.Read,
+		Read:    bus.Read,
+		VIA_CB2: via.CB2,
+		PIA_CB1: pia1.CB1,
 	}
 	err := video.Reset()
 	if err != nil {
@@ -280,10 +282,10 @@ func main() {
 // Pheripheral Interface Adaptor #1
 type PIA1 struct {
 	ports [4]Byte // 4 8bit ports
+	irq   bool    // Interrupt request
 
 	Keyboard  *Keyboard  // Keyboard
 	KbdBuffer chan (Key) // Keyboard "buffer"
-	key       Key        // Last keypress
 }
 
 func (p *PIA1) PortRead(port int) Byte {
@@ -312,13 +314,27 @@ func (p *PIA1) PortWrite(port int, data Byte) {
 }
 
 func (p *PIA1) IRQ() bool {
+	// Get & clear the current IRQ status
+	i := p.irq
+	p.irq = false
+
 	select {
-	case key := <-p.KbdBuffer:
-		// got a key
-		p.key = key
+	case <-p.KbdBuffer:
+		// Handle keypresses immediately
 		return true
 	default:
-		return false
+		return i
+	}
+}
+
+func (p *PIA1) CB1(retrace bool) {
+	// Set Retrace Interrupt flag
+	if retrace {
+		p.ports[3] |= 0x80
+		p.irq = true
+	} else {
+		p.ports[3] ^= 0x80
+		p.irq = false
 	}
 }
 
