@@ -71,16 +71,16 @@ func (kbd *Keyboard) Reset() {
 	kbd.keys['<'] = Key{9, 3}
 	kbd.keys[' '] = Key{9, 2}
 	kbd.keys['['] = Key{9, 1}
-	//kbd.keys[''] = Key{9, 0} // ^R/REVERSE ON
+	kbd.keys[0x12] = Key{9, 0} // ^R/REVERSE ON
 
 	kbd.keys['-'] = Key{8, 7}
 	kbd.keys['0'] = Key{8, 6}
-	//kbd.keys[''] = Key{8,5} // RIGHT SHIFT
+	kbd.keys[0x00] = Key{8, 5} // RIGHT SHIFT
 	kbd.keys['>'] = Key{8, 4}
 	//kbd.keys[''] = Key{8,3}
 	kbd.keys[']'] = Key{8, 2}
 	kbd.keys['@'] = Key{8, 1}
-	//kbd.keys[''] = Key{8,0} // LEFT SHIFT
+	kbd.keys[0x00] = Key{8, 0} // LEFT SHIFT
 
 	kbd.keys['+'] = Key{7, 7}
 	kbd.keys['2'] = Key{7, 6}
@@ -138,8 +138,8 @@ func (kbd *Keyboard) Reset() {
 	kbd.keys['e'] = Key{2, 1}
 	kbd.keys['q'] = Key{2, 0}
 
-	kbd.keys[0x08] = Key{1, 7}   // DEL
-	kbd.keys['\102'] = Key{1, 6} // cursor down
+	kbd.keys[0x08] = Key{1, 7} // DEL
+	kbd.keys[0x11] = Key{1, 6} // cursor down
 	//kbd.keys[''] = Key{1,5}
 	kbd.keys[')'] = Key{1, 4}
 	kbd.keys['\\'] = Key{1, 3}
@@ -147,8 +147,8 @@ func (kbd *Keyboard) Reset() {
 	kbd.keys['$'] = Key{1, 1}
 	kbd.keys['"'] = Key{1, 0}
 
-	kbd.keys['\103'] = Key{0, 7} // cursor right
-	kbd.keys['\176'] = Key{0, 6} // home
+	kbd.keys[0x1d] = Key{0, 7} // cursor right
+	kbd.keys[0x13] = Key{0, 6} // home
 	//kbd.keys['\177'] = Key{0, 5} // backspace
 	kbd.keys['('] = Key{0, 4}
 	kbd.keys['&'] = Key{0, 3}
@@ -173,8 +173,14 @@ func (kbd *Keyboard) Scan(k Keypress) {
 		switch k.State {
 		case KEY_DOWN:
 			kbd.matrix.Set(key.row, key.bit)
+			if k.Modifiers.Shift {
+				kbd.matrix.Set(8, 0) // Left shift
+			}
 		case KEY_UP:
 			kbd.matrix.Clear(key.row, key.bit)
+			if !k.Modifiers.Shift {
+				kbd.matrix.Clear(8, 0) // Left shift
+			}
 		}
 	}
 }

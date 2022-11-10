@@ -71,6 +71,16 @@ func (g *GUI) EventLoop(ctx context.Context, events chan<- Event) {
 	lastTicks := sdl.GetTicks()
 	currentTicks := lastTicks
 
+	keymap := make(map[sdl.Keycode]int)
+	keymap[sdl.K_DOWN] = 0x11
+	keymap[sdl.K_LEFT] = 0x1d
+	keymap[sdl.K_UP] = 0x11
+	keymap[sdl.K_RIGHT] = 0x1d
+	keymap[sdl.K_LSHIFT] = 0x00
+	keymap[sdl.K_RSHIFT] = 0x00
+	keymap[sdl.K_HOME] = 0x13
+	keymap[sdl.K_LCTRL] = 0x12 // Reverse
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -109,14 +119,36 @@ func (g *GUI) EventLoop(ctx context.Context, events chan<- Event) {
 				Keycode: int(event.Keysym.Sym),
 			}
 
-			// Only send KEY_DOWN events for non-printable keys are interesting
+			// Remap certain special keys
+			sym := event.Keysym.Sym
+			switch sym {
+			case sdl.K_DOWN,
+				sdl.K_RIGHT,
+				sdl.K_HOME,
+				sdl.K_LCTRL:
+				k.Keycode = keymap[sym]
+			case sdl.K_UP,
+				sdl.K_LEFT,
+				sdl.K_LSHIFT,
+				sdl.K_RSHIFT:
+				k.Keycode = keymap[sym]
+				k.Modifiers.Shift = true
+			}
+
+			// Only send KEY_DOWN events for non-printable keys that are interesting
 			if event.State == sdl.PRESSED {
 				k.State = KEY_DOWN
 
-				switch event.Keysym.Sym {
+				switch sym {
 				case sdl.K_RETURN,
 					sdl.K_ESCAPE,
-					sdl.K_BACKSPACE:
+					sdl.K_BACKSPACE,
+					sdl.K_LSHIFT,
+					sdl.K_RSHIFT,
+					sdl.K_DOWN,
+					sdl.K_RIGHT,
+					sdl.K_UP,
+					sdl.K_LEFT:
 
 					// Send new key press event
 					events <- EventKeypress{
