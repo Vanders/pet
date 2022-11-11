@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"image/color"
+	"unicode/utf8"
 
 	"github.com/veandco/go-sdl2/sdl"
 )
@@ -251,7 +252,8 @@ func (g *GUI) EventLoop(ctx context.Context, events chan<- Event) {
 			nextEvent := nextEvents[0]
 			if nextEvent != nil {
 				inputEvent := nextEvent.(*sdl.TextInputEvent)
-				inChar = rune(inputEvent.Text[0])
+				text := inputEvent.GetText()
+				inChar, _ = utf8.DecodeRuneInString(text[0:])
 			}
 
 			if event.State == sdl.PRESSED {
