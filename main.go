@@ -42,6 +42,33 @@ func dump(cpu *mos6502.CPU, ram *RAM) {
 	}
 }
 
+type PET struct {
+	cpu  *mos6502.CPU
+	bus  *Bus
+	ram  *RAM
+	pia1 *PIA1
+	pia2 *PIA2
+	via  *VIA
+
+	cassette *Cassette
+
+	gui *GUI
+}
+
+const (
+	// Kernal vectors
+	VEC_LOAD = 0xffd5
+	VEC_SAVE = 0xffd8
+
+	// Trap function selectors
+	TRAP_LOAD = 0x01
+	TRAP_SAVE = 0x02
+
+	// Zero page
+	TXTTAB = 0x28
+	VARTAB = 0x2a
+)
+
 func main() {
 	var (
 		writer io.Writer //= os.Stderr
@@ -128,6 +155,8 @@ func main() {
 		}
 		kernal.Reset()
 		kernal.Load("roms/kernal-2.901465-03.bin")
+		kernal.PatchVector(VEC_LOAD, LOADPATCH_v2)
+		kernal.PatchVector(VEC_SAVE, SAVEPATCH_v2)
 		bus.Map(kernal)
 	case 4:
 		basic1 := &ROM{
@@ -168,6 +197,8 @@ func main() {
 		}
 		kernal.Reset()
 		kernal.Load("roms/kernal-4.901465-22.bin")
+		kernal.PatchVector(VEC_LOAD, LOADPATCH_v4)
+		kernal.PatchVector(VEC_SAVE, SAVEPATCH_v4)
 		bus.Map(kernal)
 	default:
 		fmt.Fprintf(os.Stderr, "Invalid ROM version %d\n", *romVersion)
@@ -232,6 +263,9 @@ func main() {
 		ROM:     charROM,
 	}
 
+	// Configure "cassette"
+	cas := &Cassette{}
+
 	// Start GUI
 	gui := GUI{
 		Video: video,
@@ -252,6 +286,18 @@ func main() {
 
 	// Create a channel for GUI events
 	events := make(chan Event, 10)
+
+	pet := &PET{
+		cpu:      &cpu,
+		bus:      &bus,
+		ram:      ram,
+		pia1:     pia1,
+		pia2:     pia2,
+		via:      via,
+		cassette: cas,
+		gui:      &gui,
+	}
+	cpu.Trap = pet.HandleTrap
 
 	// Run the CPU & pheripherals
 	wg.Add(1)
@@ -294,6 +340,48 @@ func main() {
 
 	wg.Wait()
 	dump(&cpu, ram)
+}
+
+// Trap handler
+func (p *PET) HandleTrap(selector Byte) {
+	switch selector {
+	case TRAP_LOAD:
+		err := p.cassette.Load("tape.prg")
+		if err != nil {
+			panic(err)
+		}
+		addr := p.cassette.Addr()
+		size := p.cassette.Size()
+		fmt.Printf("load %d bytes to address $%04x\n", size, addr)
+		for n := Word(0); n < size; n++ {
+			b := p.cassette.FetchByte()
+			p.bus.Write(addr+n, b)
+		}
+	case TRAP_SAVE:
+		// Get start & top of BASIC, calculate size
+		txttab := p.ReadWord(TXTTAB)
+		vartab := p.ReadWord(VARTAB)
+		size := vartab - txttab
+
+		fmt.Printf("txttab: $%04x, vartab: $%04x, size=%d\n", txttab, vartab, size)
+
+		// Copy BASIC data
+		data := make([]Byte, size)
+		for n := mos6502.Word(0); n < size; n++ {
+			data[n] = p.bus.Read(txttab + n)
+		}
+
+		err := p.cassette.Save("save.prg", txttab, size, data)
+		if err != nil {
+			panic(err)
+		}
+	}
+}
+
+func (p *PET) ReadWord(address mos6502.Word) mos6502.Word {
+	lo := p.bus.Read(address)
+	hi := p.bus.Read(address + 1)
+	return Word(hi)<<8 | Word(lo)
 }
 
 // Pheripheral Interface Adaptor #1

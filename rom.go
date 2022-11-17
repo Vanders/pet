@@ -51,3 +51,18 @@ func (r *ROM) Load(filename string) {
 		r.mem[Word(n)] = Byte(data[n])
 	}
 }
+
+func (r *ROM) ReadVector(address Word) Word {
+	// The vector is an absolute JMP followed by the target address
+	lo := r.Read(address + 1)
+	hi := r.Read(address + 2)
+	return Word(hi)<<8 | Word(lo)
+}
+
+// Patch the data relative to the given vector with the patch contents
+func (r *ROM) PatchVector(vector Word, patch []Byte) {
+	addr := r.ReadVector(vector)
+	for n, b := range patch {
+		r.mem[(addr+Word(n))-r.Base] = b
+	}
+}

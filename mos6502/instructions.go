@@ -9,6 +9,12 @@ var (
 	errUnsupportedMode = errors.New("unknown or unsupported addressing mode")
 )
 
+// Emulator trap: accumulator selects the trap function
+func (c *CPU) op_trap(i Instruction) error {
+	c.Trap(c.Registers.A.Get())
+	return nil
+}
+
 // Add Memory to Accumulator with Carry
 // See http://www.righto.com/2012/12/the-6502-overflow-flag-explained.html for an explanation
 func (c *CPU) op_adc(i Instruction) error {

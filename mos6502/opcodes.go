@@ -116,6 +116,7 @@ func (c *CPU) makeInstructionSet() map[Opcode]Instruction {
 		INS_AND_ZP:  {ZERO_PAGE, 1, "AND $%02x", c.op_and},
 		INS_SBC_ABX: {ABSOLUTE_X, 1, "SBC %02x,X", c.op_sbc},
 		INS_SBC_ABS: {ABSOLUTE, 2, "SBC %02x", c.op_sbc},
+		INS_TRAP:    {IMPLIED, 0, "TRAP", c.op_trap},
 	}
 }
 
@@ -174,6 +175,7 @@ const (
 	INS_LSR_AC = 0x4a // logical shift right accumulator
 	INS_JMP_AB = 0x4c // jump absolute
 
+	INS_BVC_RE  = 0x50 // branch if overflow relative
 	INS_LSR_ZPX = 0x56 // logical shift right zero page indexed
 	INS_CLI     = 0x58 // clear interrupt disable
 
@@ -259,10 +261,9 @@ const (
 	INS_SBC_ABS = 0xed // subtract with carry absolute
 	INS_INC_AB  = 0xee // increment absolute
 
+	INS_BEQ_RE  = 0xf0 // branch if equal relative
 	INS_SBC_IY  = 0xf1 // subtract with carry indirect y
+	INS_TRAP    = 0xf2 // emulator trap (illegal opcode)
 	INS_SBC_ABY = 0xf9 // subtract with carry absolute y
 	INS_SBC_ABX = 0xfd // subtract with carry zero page indexed x
-
-	INS_BEQ_RE = 0xf0 // branch if equal relative
-	INS_BVC_RE = 0x50 // branch if overflow relative
 )

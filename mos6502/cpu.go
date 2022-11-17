@@ -22,6 +22,7 @@ type CPU struct {
 
 	Read  func(address Word) Byte        // Read a single byte from the bus
 	Write func(address Word, value Byte) // Write a single byte to the bus
+	Trap  func(selector Byte)            // Handle emulator trap
 
 	Writer io.Writer // io.Writer for log output
 }
