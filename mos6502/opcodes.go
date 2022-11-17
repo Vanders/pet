@@ -115,6 +115,7 @@ func (c *CPU) makeInstructionSet() map[Opcode]Instruction {
 		INS_BVC_RE:  {RELATIVE, 1, "BVC $%02x", c.op_bvc},
 		INS_AND_ZP:  {ZERO_PAGE, 1, "AND $%02x", c.op_and},
 		INS_SBC_ABX: {ABSOLUTE_X, 1, "SBC %02x,X", c.op_sbc},
+		INS_SBC_ABS: {ABSOLUTE, 2, "SBC %02x", c.op_sbc},
 	}
 }
 
@@ -247,15 +248,16 @@ const (
 	INS_CMP_ABY = 0xd9 // compare absolute indexed y
 	INS_CMP_ABX = 0xdd // compare absolute indexed x
 
-	INS_CPX_IM = 0xe0 // compare x immediate
-	INS_CPX_ZP = 0xe4 // compare x zero page
-	INS_SBC_ZP = 0xe5 // subtract with carry zero page
-	INS_INC_ZP = 0xe6 // increment zero page
-	INS_INX    = 0xe8 // increment x
-	INS_SBC_IM = 0xe9 // subtract with carry immediate
-	INS_NOP    = 0xea // no-op
-	INS_CPX_AB = 0xec // compare x absolute
-	INS_INC_AB = 0xee // increment absolute
+	INS_CPX_IM  = 0xe0 // compare x immediate
+	INS_CPX_ZP  = 0xe4 // compare x zero page
+	INS_SBC_ZP  = 0xe5 // subtract with carry zero page
+	INS_INC_ZP  = 0xe6 // increment zero page
+	INS_INX     = 0xe8 // increment x
+	INS_SBC_IM  = 0xe9 // subtract with carry immediate
+	INS_NOP     = 0xea // no-op
+	INS_CPX_AB  = 0xec // compare x absolute
+	INS_SBC_ABS = 0xed // subtract with carry absolute
+	INS_INC_AB  = 0xee // increment absolute
 
 	INS_SBC_IY  = 0xf1 // subtract with carry indirect y
 	INS_SBC_ABY = 0xf9 // subtract with carry absolute y
