@@ -88,9 +88,7 @@ func main() {
 	}
 
 	// Create a new memory bus
-	bus := Bus{
-		Writer: os.Stderr,
-	}
+	bus := Bus{}
 
 	// Initialise memory
 
@@ -367,7 +365,7 @@ func (p *PET) HandleTrap(selector Byte) {
 			p.bus.Write(addr+n, b)
 		}
 		// Set top of BASIC
-		p.WriteWord(VARTAB, size+1)
+		p.WriteWord(VARTAB, addr+size+1)
 	case TRAP_SAVE:
 		// Get start & top of BASIC, calculate size
 		txttab := p.ReadWord(TXTTAB)
