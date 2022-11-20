@@ -8,6 +8,7 @@ import (
 	"os"
 	"sync"
 
+	"github.com/sqweek/dialog"
 	"github.com/vanders/pet/mos6502"
 )
 
@@ -79,6 +80,7 @@ func main() {
 
 	debug := flag.Bool("d", false, "enable CPU dissasembly")
 	romVersion := flag.Int("r", 2, "ROM version (2 or 4)")
+	ramSize := flag.Int("m", 32, "RAM size (Megabytes)")
 	flag.Parse()
 
 	if *debug {
@@ -86,14 +88,16 @@ func main() {
 	}
 
 	// Create a new memory bus
-	bus := Bus{}
+	bus := Bus{
+		Writer: os.Stderr,
+	}
 
 	// Initialise memory
 
 	// Main memory
 	ram := &RAM{
 		Base: 0x0000,
-		Size: 0x7fff, // 32k
+		Size: Word(*ramSize * 1024), // 0x7fff, // 32k
 	}
 	ram.Reset()
 	bus.Map(ram)
@@ -346,7 +350,12 @@ func main() {
 func (p *PET) HandleTrap(selector Byte) {
 	switch selector {
 	case TRAP_LOAD:
-		err := p.cassette.Load("tape.prg")
+		filename, err := p.gui.LoadDialog("Load program", "PRG files", "prg")
+		if err == dialog.Cancelled {
+			break
+		}
+
+		err = p.cassette.Load(filename)
 		if err != nil {
 			panic(err)
 		}
@@ -357,6 +366,8 @@ func (p *PET) HandleTrap(selector Byte) {
 			b := p.cassette.FetchByte()
 			p.bus.Write(addr+n, b)
 		}
+		// Set top of BASIC
+		p.WriteWord(VARTAB, size+1)
 	case TRAP_SAVE:
 		// Get start & top of BASIC, calculate size
 		txttab := p.ReadWord(TXTTAB)
@@ -371,7 +382,12 @@ func (p *PET) HandleTrap(selector Byte) {
 			data[n] = p.bus.Read(txttab + n)
 		}
 
-		err := p.cassette.Save("save.prg", txttab, size, data)
+		filename, err := p.gui.LoadDialog("Save program", "PRG files", "prg")
+		if err == dialog.Cancelled {
+			break
+		}
+
+		err = p.cassette.Save(filename, txttab, size, data)
 		if err != nil {
 			panic(err)
 		}
@@ -382,6 +398,14 @@ func (p *PET) ReadWord(address mos6502.Word) mos6502.Word {
 	lo := p.bus.Read(address)
 	hi := p.bus.Read(address + 1)
 	return Word(hi)<<8 | Word(lo)
+}
+
+func (p *PET) WriteWord(address mos6502.Word, data mos6502.Word) {
+	hi := mos6502.Byte((data >> 8) & 0xFF)
+	lo := mos6502.Byte(data & 0xFF)
+
+	p.bus.Write(address, lo)
+	p.bus.Write(address+1, hi)
 }
 
 // Pheripheral Interface Adaptor #1

@@ -5,6 +5,7 @@ import (
 	"image/color"
 	"unicode/utf8"
 
+	"github.com/sqweek/dialog"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
@@ -302,4 +303,12 @@ func (g *GUI) Stop() {
 	g.window.Destroy()
 
 	sdl.Quit()
+}
+
+func (g *GUI) LoadDialog(title, filter, ext string) (string, error) {
+	return dialog.File().Filter(filter, ext).Title(title).Load()
+}
+
+func (g *GUI) SaveDialog(title, filter, ext string) (string, error) {
+	return dialog.File().Filter(filter, ext).Title(title).Save()
 }
