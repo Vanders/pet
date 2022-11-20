@@ -117,6 +117,10 @@ func (c *CPU) makeInstructionSet() map[Opcode]Instruction {
 		INS_SBC_ABX: {ABSOLUTE_X, 1, "SBC %02x,X", c.op_sbc},
 		INS_SBC_ABS: {ABSOLUTE, 2, "SBC %02x", c.op_sbc},
 		INS_TRAP:    {IMPLIED, 0, "TRAP", c.op_trap},
+		INS_SBC_ZPX: {ZERO_PAGE_X, 1, "SBC $%02x,X", c.op_sbc},
+		INS_AND_ZPX: {ZERO_PAGE_X, 1, "AND $%02x,X", c.op_and},
+		INS_BIT_ZPX: {ZERO_PAGE_X, 1, "BIT $%02x,X", c.op_bit},
+		INS_SED:     {IMPLIED, 0, "SED ", c.op_sed},
 	}
 }
 
@@ -164,8 +168,10 @@ const (
 	INS_ROL_AC = 0x2a // rotate left accumulator
 	INS_BIT_AB = 0x2c // test bit absolute
 
-	INS_BMI_RE = 0x30 // branch if minus relative
-	INS_SEC    = 0x38 // set carry flag
+	INS_BMI_RE  = 0x30 // branch if minus relative
+	INS_BIT_ZPX = 0x34 // BIT zero page indexed (65c02)
+	INS_AND_ZPX = 0x35 // AND zero page indexed
+	INS_SEC     = 0x38 // set carry flag
 
 	INS_RTI    = 0x40 // return from interrupt
 	INS_EOR_ZP = 0x45 // exclusive OR zero page
@@ -264,6 +270,8 @@ const (
 	INS_BEQ_RE  = 0xf0 // branch if equal relative
 	INS_SBC_IY  = 0xf1 // subtract with carry indirect y
 	INS_TRAP    = 0xf2 // emulator trap (illegal opcode)
+	INS_SBC_ZPX = 0xf5 // subtract with carry zero page indexed
+	INS_SED     = 0xf8 // set decimal flag
 	INS_SBC_ABY = 0xf9 // subtract with carry absolute y
 	INS_SBC_ABX = 0xfd // subtract with carry zero page indexed x
 )

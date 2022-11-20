@@ -201,7 +201,14 @@ func (c *CPU) op_bvs(i Instruction) error {
 }
 
 func (c *CPU) op_brk(i Instruction) error {
-	return errUnimplemented
+	c.PushWord(c.PC.Get() + 2)
+	c.PushByte(c.Registers.P.GetByte())
+	c.Registers.P.B = true
+
+	addr := c.ReadWord(VEC_INTERRUPT)
+	c.PC.Set(addr)
+
+	return nil
 }
 
 func (c *CPU) op_bit(i Instruction) error {
@@ -384,6 +391,13 @@ func (c *CPU) op_rts(i Instruction) error {
 // Set Carry Flag
 func (c *CPU) op_sec(i Instruction) error {
 	c.Registers.P.SetCarry(true)
+
+	return nil
+}
+
+// Set Decimal Mode
+func (c *CPU) op_sed(i Instruction) error {
+	c.Registers.P.D = true
 
 	return nil
 }
