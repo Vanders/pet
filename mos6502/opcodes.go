@@ -10,17 +10,26 @@ type Instruction struct {
 // makeInstructionSet returns the table of opcodes with their metadata
 func (c *CPU) makeInstructionSet() map[Opcode]Instruction {
 	return map[Opcode]Instruction{
-		INS_ADC_ZP:  {ZERO_PAGE, 1, "ADC $%02x", c.op_adc},
 		INS_ADC_IM:  {IMMEDIATE, 1, "ADC #$%02x", c.op_adc},
-		INS_ADC_IY:  {INDIRECT_Y, 1, "ADC ($%02x),Y", c.op_adc},
+		INS_ADC_AB:  {ABSOLUTE, 2, "ADC $%04x", c.op_adc},
+		INS_ADC_ABX: {ABSOLUTE_X, 2, "ADC $%04x,X", c.op_adc},
 		INS_ADC_ABY: {ABSOLUTE_Y, 2, "ADC $%04x,Y", c.op_adc},
+		INS_ADC_ZP:  {ZERO_PAGE, 1, "ADC $%02x", c.op_adc},
+		INS_ADC_ZPX: {ZERO_PAGE, 1, "ADC $%02x,X", c.op_adc},
+		INS_ADC_IX:  {INDIRECT_X, 1, "ADC ($%02x,X)", c.op_adc},
+		INS_ADC_IY:  {INDIRECT_Y, 1, "ADC ($%02x),Y", c.op_adc},
 
 		INS_AND_IM:  {IMMEDIATE, 1, "AND #$%02x", c.op_and},
+		INS_AND_AB:  {ABSOLUTE, 2, "AND $%04x", c.op_and},
+		INS_AND_ABX: {ABSOLUTE_X, 2, "AND $%04x,X", c.op_and},
+		INS_AND_ABY: {ABSOLUTE_Y, 2, "AND $%04x,Y", c.op_and},
 		INS_AND_ZP:  {ZERO_PAGE, 1, "AND $%02x", c.op_and},
 		INS_AND_ZPX: {ZERO_PAGE_X, 1, "AND $%02x,X", c.op_and},
+		INS_AND_IX:  {INDIRECT_X, 1, "AND ($%02x,X)", c.op_and},
+		INS_AND_IY:  {INDIRECT_Y, 1, "AND ($%02x),Y", c.op_and},
 
-		INS_ASL_ZP:  {ZERO_PAGE, 1, "ASL $%02x", c.op_asl},
 		INS_ASL_AC:  {ACCUMULATOR, 0, "ASL ", c.op_asl},
+		INS_ASL_ZP:  {ZERO_PAGE, 1, "ASL $%02x", c.op_asl},
 		INS_ASL_ZPX: {ZERO_PAGE_X, 1, "ASL $%02x,X", c.op_asl},
 
 		INS_BCC_RE: {RELATIVE, 1, "BCC $%02x", c.op_bcc},
@@ -43,31 +52,31 @@ func (c *CPU) makeInstructionSet() map[Opcode]Instruction {
 		INS_CLD: {IMPLIED, 0, "CLD ", c.op_cld},
 		INS_CLI: {IMPLIED, 0, "CLI ", c.op_cli},
 
-		INS_CMP_ZP:  {ZERO_PAGE, 1, "CMP $%02x", c.op_cmp},
 		INS_CMP_IM:  {IMMEDIATE, 1, "CMP #$%02x", c.op_cmp},
 		INS_CMP_AB:  {ABSOLUTE, 2, "CMP $%04x", c.op_cmp},
-		INS_CMP_IY:  {INDIRECT_Y, 1, "CMP ($%02x),Y", c.op_cmp},
-		INS_CMP_ABY: {ABSOLUTE_Y, 2, "CMP $%04x,Y", c.op_cmp},
 		INS_CMP_ABX: {ABSOLUTE_X, 2, "CMP $%04x,X", c.op_cmp},
+		INS_CMP_ABY: {ABSOLUTE_Y, 2, "CMP $%04x,Y", c.op_cmp},
+		INS_CMP_ZP:  {ZERO_PAGE, 1, "CMP $%02x", c.op_cmp},
+		INS_CMP_IY:  {INDIRECT_Y, 1, "CMP ($%02x),Y", c.op_cmp},
 
 		INS_CPX_IM: {IMMEDIATE, 1, "CPX #$%02x", c.op_cpx},
-		INS_CPX_ZP: {ZERO_PAGE, 1, "CPX $%02x", c.op_cpx},
 		INS_CPX_AB: {ABSOLUTE, 2, "CPX $%04x", c.op_cpx},
+		INS_CPX_ZP: {ZERO_PAGE, 1, "CPX $%02x", c.op_cpx},
 
 		INS_CPY_IM: {IMMEDIATE, 1, "CPY #$%02x", c.op_cpy},
 		INS_CPY_ZP: {ZERO_PAGE, 1, "CPY $%02x", c.op_cpy},
 
-		INS_DEC_ZP: {ZERO_PAGE, 1, "DEC $%02x", c.op_dec},
 		INS_DEC_AB: {ABSOLUTE, 2, "DEC $%04x", c.op_dec},
+		INS_DEC_ZP: {ZERO_PAGE, 1, "DEC $%02x", c.op_dec},
 
 		INS_DEX: {IMPLIED, 0, "DEX ", c.op_dex},
 		INS_DEY: {IMPLIED, 0, "DEY ", c.op_dey},
 
-		INS_EOR_ZP: {ZERO_PAGE, 1, "EOR $%02x", c.op_eor},
 		INS_EOR_IM: {IMMEDIATE, 1, "EOR #$%02x", c.op_eor},
+		INS_EOR_ZP: {ZERO_PAGE, 1, "EOR $%02x", c.op_eor},
 
-		INS_INC_ZP: {ZERO_PAGE, 1, "INC $%02x", c.op_inc},
 		INS_INC_AB: {ABSOLUTE, 2, "INC $%04x", c.op_inc},
+		INS_INC_ZP: {ZERO_PAGE, 1, "INC $%02x", c.op_inc},
 
 		INS_INX: {IMPLIED, 0, "INX ", c.op_inx},
 		INS_INY: {IMPLIED, 0, "INY ", c.op_iny},
@@ -77,33 +86,33 @@ func (c *CPU) makeInstructionSet() map[Opcode]Instruction {
 
 		INS_JSR_AB: {ABSOLUTE, 2, "JSR $%04x", c.op_jsr},
 
-		INS_LDA_ZP:  {ZERO_PAGE, 1, "LDA $%02x", c.op_lda},
 		INS_LDA_IM:  {IMMEDIATE, 1, "LDA #$%02x", c.op_lda},
 		INS_LDA_AB:  {ABSOLUTE, 2, "LDA $%04x", c.op_lda},
-		INS_LDA_IY:  {INDIRECT_Y, 1, "LDA ($%02x),Y", c.op_lda},
-		INS_LDA_ZPX: {ZERO_PAGE_X, 1, "LDA $%02x,X", c.op_lda},
-		INS_LDA_ABY: {ABSOLUTE_Y, 2, "LDA $%04x,Y", c.op_lda},
 		INS_LDA_ABX: {ABSOLUTE_X, 2, "LDA $%04x,X", c.op_lda},
+		INS_LDA_ABY: {ABSOLUTE_Y, 2, "LDA $%04x,Y", c.op_lda},
+		INS_LDA_ZP:  {ZERO_PAGE, 1, "LDA $%02x", c.op_lda},
+		INS_LDA_ZPX: {ZERO_PAGE_X, 1, "LDA $%02x,X", c.op_lda},
+		INS_LDA_IY:  {INDIRECT_Y, 1, "LDA ($%02x),Y", c.op_lda},
 
 		INS_LDX_IM:  {IMMEDIATE, 1, "LDX #$%02x", c.op_ldx},
-		INS_LDX_ZP:  {ZERO_PAGE, 1, "LDX $%02x", c.op_ldx},
 		INS_LDX_AB:  {ABSOLUTE, 2, "LDX $%04x", c.op_ldx},
-		INS_LDX_ZPY: {ZERO_PAGE_Y, 1, "LDX $%02x,Y", c.op_ldx},
 		INS_LDX_ABY: {ABSOLUTE_Y, 2, "LDX $%04x,Y", c.op_ldx},
+		INS_LDX_ZP:  {ZERO_PAGE, 1, "LDX $%02x", c.op_ldx},
+		INS_LDX_ZPY: {ZERO_PAGE_Y, 1, "LDX $%02x,Y", c.op_ldx},
 
 		INS_LDY_IM:  {IMMEDIATE, 1, "LDY #$%02x", c.op_ldy},
-		INS_LDY_ZP:  {ZERO_PAGE, 1, "LDY $%02x", c.op_ldy},
 		INS_LDY_AB:  {ABSOLUTE, 2, "LDY $%04x", c.op_ldy},
+		INS_LDY_ZP:  {ZERO_PAGE, 1, "LDY $%02x", c.op_ldy},
 		INS_LDY_ZPX: {ZERO_PAGE_X, 1, "LDY $%02x,X", c.op_ldy},
 
-		INS_LSR_ZP:  {ZERO_PAGE, 1, "LSR $%02x", c.op_lsr},
 		INS_LSR_AC:  {ACCUMULATOR, 0, "LSR ", c.op_lsr},
+		INS_LSR_ZP:  {ZERO_PAGE, 1, "LSR $%02x", c.op_lsr},
 		INS_LSR_ZPX: {ZERO_PAGE_X, 1, "LSR $%02x,X", c.op_lsr},
 
 		INS_NOP: {IMPLIED, 0, "NOP ", c.op_nop},
 
-		INS_ORA_ZP: {ZERO_PAGE, 1, "ORA $%02x", c.op_ora},
 		INS_ORA_IM: {IMMEDIATE, 1, "ORA #$%02x", c.op_ora},
+		INS_ORA_ZP: {ZERO_PAGE, 1, "ORA $%02x", c.op_ora},
 		INS_ORA_IY: {INDIRECT_Y, 1, "ORA ($%02x),Y", c.op_ora},
 
 		INS_PHA: {IMPLIED, 0, "PHA ", c.op_pha},
@@ -111,40 +120,40 @@ func (c *CPU) makeInstructionSet() map[Opcode]Instruction {
 		INS_PLA: {IMPLIED, 0, "PLA ", c.op_pla},
 		INS_PLP: {IMPLIED, 0, "PLP ", c.op_plp},
 
-		INS_ROL_ZP: {ZERO_PAGE, 1, "ROL $%02x", c.op_rol},
 		INS_ROL_AC: {ACCUMULATOR, 0, "ROL ", c.op_rol},
+		INS_ROL_ZP: {ZERO_PAGE, 1, "ROL $%02x", c.op_rol},
 
-		INS_ROR_ZP:  {ZERO_PAGE, 1, "ROR $%02x", c.op_ror},
 		INS_ROR_AC:  {ACCUMULATOR, 0, "ROR ", c.op_ror},
+		INS_ROR_ZP:  {ZERO_PAGE, 1, "ROR $%02x", c.op_ror},
 		INS_ROR_ZPX: {ZERO_PAGE_X, 1, "ROR $%02x,X", c.op_ror},
 
 		INS_RTI: {IMPLIED, 0, "RTI ", c.op_rti},
 		INS_RTS: {IMPLIED, 0, "RTS ", c.op_rts},
 
-		INS_SBC_ZP:  {ZERO_PAGE, 1, "SBC $%02x", c.op_sbc},
 		INS_SBC_IM:  {IMMEDIATE, 1, "SBC #$%02x", c.op_sbc},
-		INS_SBC_IY:  {INDIRECT_Y, 1, "SBC ($%02x),Y", c.op_sbc},
-		INS_SBC_ABY: {ABSOLUTE_Y, 2, "SBC $%04x,Y", c.op_sbc},
+		INS_SBC_AB:  {ABSOLUTE, 2, "SBC %02x", c.op_sbc},
 		INS_SBC_ABX: {ABSOLUTE_X, 1, "SBC %02x,X", c.op_sbc},
-		INS_SBC_ABS: {ABSOLUTE, 2, "SBC %02x", c.op_sbc},
+		INS_SBC_ABY: {ABSOLUTE_Y, 2, "SBC $%04x,Y", c.op_sbc},
+		INS_SBC_ZP:  {ZERO_PAGE, 1, "SBC $%02x", c.op_sbc},
 		INS_SBC_ZPX: {ZERO_PAGE_X, 1, "SBC $%02x,X", c.op_sbc},
+		INS_SBC_IY:  {INDIRECT_Y, 1, "SBC ($%02x),Y", c.op_sbc},
 
 		INS_SEC: {IMPLIED, 0, "SEC ", c.op_sec},
 		INS_SED: {IMPLIED, 0, "SED ", c.op_sed},
 		INS_SEI: {IMPLIED, 0, "SEI ", c.op_sei},
 
-		INS_STA_ZP:  {ZERO_PAGE, 1, "STA $%02x", c.op_sta},
 		INS_STA_AB:  {ABSOLUTE, 2, "STA $%04x", c.op_sta},
 		INS_STA_ABX: {ABSOLUTE_X, 2, "STA $%04x,X", c.op_sta},
 		INS_STA_ABY: {ABSOLUTE_Y, 2, "STA $%04x,Y", c.op_sta},
-		INS_STA_IY:  {INDIRECT_Y, 1, "STA ($%02x),Y", c.op_sta},
+		INS_STA_ZP:  {ZERO_PAGE, 1, "STA $%02x", c.op_sta},
 		INS_STA_ZPX: {ZERO_PAGE_X, 1, "STA $%02x,X", c.op_sta},
+		INS_STA_IY:  {INDIRECT_Y, 1, "STA ($%02x),Y", c.op_sta},
 
-		INS_STX_ZP: {ZERO_PAGE, 1, "STX $%02x", c.op_stx},
 		INS_STX_AB: {ABSOLUTE, 2, "STX $%04x", c.op_stx},
+		INS_STX_ZP: {ZERO_PAGE, 1, "STX $%02x", c.op_stx},
 
-		INS_STY_ZP:  {ZERO_PAGE, 1, "STY $%02x", c.op_sty},
 		INS_STY_AB:  {ABSOLUTE, 2, "STY $%04x", c.op_sty},
+		INS_STY_ZP:  {ZERO_PAGE, 1, "STY $%02x", c.op_sty},
 		INS_STY_ZPX: {ZERO_PAGE_X, 1, "STY $%02x,X", c.op_sty},
 
 		INS_TAX: {IMPLIED, 0, "TAX ", c.op_tax},
@@ -194,6 +203,7 @@ const (
 	INS_CLC     = 0x18 // clear carry
 
 	INS_JSR_AB = 0x20 // jump subroutine absolute
+	INS_AND_IX = 0x21 // AND indirect x
 	INS_BIT_ZP = 0x24 // test bit zero page
 	INS_ROL_ZP = 0x26 // rotate left zero page
 	INS_PLP    = 0x28 // pull status
@@ -201,11 +211,15 @@ const (
 	INS_AND_ZP = 0x25 // AND zero page
 	INS_ROL_AC = 0x2a // rotate left accumulator
 	INS_BIT_AB = 0x2c // test bit absolute
+	INS_AND_AB = 0x2d // AND absolute
 
 	INS_BMI_RE  = 0x30 // branch if minus relative
+	INS_AND_IY  = 0x31 // AND indirect y
 	INS_BIT_ZPX = 0x34 // BIT zero page indexed (65c02)
 	INS_AND_ZPX = 0x35 // AND zero page indexed
 	INS_SEC     = 0x38 // set carry flag
+	INS_AND_ABY = 0x39 // AND absolute y
+	INS_AND_ABX = 0x3d // AND absolute x
 
 	INS_RTI    = 0x40 // return from interrupt
 	INS_EOR_ZP = 0x45 // exclusive OR zero page
@@ -220,18 +234,22 @@ const (
 	INS_CLI     = 0x58 // clear interrupt disable
 
 	INS_RTS    = 0x60 // return from subroutine (implicit)
+	INS_ADC_IX = 0x61 // add with carry indirect x
 	INS_ADC_ZP = 0x65 // add with carry zero page
 	INS_ROR_ZP = 0x66 // rotate right zero page
 	INS_PLA    = 0x68 // pull accumulator
 	INS_ADC_IM = 0x69 // add with carry immediate
 	INS_ROR_AC = 0x6a // rotate right accumulator
 	INS_JMP_IN = 0x6c // jump indirect
+	INS_ADC_AB = 0x6d // add with carry absolute
 
 	INS_BVS_RE  = 0x70 // branch if overflow set relative
 	INS_ADC_IY  = 0x71 // add with carry indirect y
 	INS_ROR_ZPX = 0x76 // rotate right zero page indexed
+	INS_ADC_ZPX = 0x75 // add with carry zero page x
 	INS_ADC_ABY = 0x79 // add with carry absolute indexed y
 	INS_SEI     = 0x78 // set interrupt disable
+	INS_ADC_ABX = 0x7d // add with carry absolute x
 
 	INS_STY_ZP = 0x84 // store y zero page
 	INS_STA_ZP = 0x85 // store accumulator zero page
@@ -290,16 +308,16 @@ const (
 	INS_CMP_ABY = 0xd9 // compare absolute indexed y
 	INS_CMP_ABX = 0xdd // compare absolute indexed x
 
-	INS_CPX_IM  = 0xe0 // compare x immediate
-	INS_CPX_ZP  = 0xe4 // compare x zero page
-	INS_SBC_ZP  = 0xe5 // subtract with carry zero page
-	INS_INC_ZP  = 0xe6 // increment zero page
-	INS_INX     = 0xe8 // increment x
-	INS_SBC_IM  = 0xe9 // subtract with carry immediate
-	INS_NOP     = 0xea // no-op
-	INS_CPX_AB  = 0xec // compare x absolute
-	INS_SBC_ABS = 0xed // subtract with carry absolute
-	INS_INC_AB  = 0xee // increment absolute
+	INS_CPX_IM = 0xe0 // compare x immediate
+	INS_CPX_ZP = 0xe4 // compare x zero page
+	INS_SBC_ZP = 0xe5 // subtract with carry zero page
+	INS_INC_ZP = 0xe6 // increment zero page
+	INS_INX    = 0xe8 // increment x
+	INS_SBC_IM = 0xe9 // subtract with carry immediate
+	INS_NOP    = 0xea // no-op
+	INS_CPX_AB = 0xec // compare x absolute
+	INS_SBC_AB = 0xed // subtract with carry absolute
+	INS_INC_AB = 0xee // increment absolute
 
 	INS_BEQ_RE  = 0xf0 // branch if equal relative
 	INS_SBC_IY  = 0xf1 // subtract with carry indirect y
