@@ -567,6 +567,13 @@ func (c *CPU) op_cld(i Instruction) error {
 	return nil
 }
 
+// Clear Overflow
+func (c *CPU) op_clv(i Instruction) error {
+	c.Registers.P.V = false
+
+	return nil
+}
+
 // Compare Memory and Index X
 func (c *CPU) op_cpx(i Instruction) error {
 	data, err := c.FetchByteMode(i.Mode)

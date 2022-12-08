@@ -64,6 +64,7 @@ func (c *CPU) makeInstructionSet() map[Opcode]Instruction {
 		INS_CLC: {IMPLIED, 0, "CLC ", c.op_clc},
 		INS_CLD: {IMPLIED, 0, "CLD ", c.op_cld},
 		INS_CLI: {IMPLIED, 0, "CLI ", c.op_cli},
+		INS_CLV: {IMPLIED, 0, "CLV ", c.op_clv},
 
 		INS_CMP_IM:  {IMMEDIATE, 1, "CMP #$%02x", c.op_cmp},
 		INS_CMP_AB:  {ABSOLUTE, 2, "CMP $%04x", c.op_cmp},
@@ -352,6 +353,7 @@ const (
 	INS_LDY_ZPX = 0xb4 // load y zero page indexed
 	INS_LDA_ZPX = 0xb5 // load accumulator zero page indexed
 	INS_LDX_ZPY = 0xb6 // load x zero page indexed y
+	INS_CLV     = 0xb8 // clear overflow
 	INS_LDA_ABY = 0xb9 // load accumulator absolute y
 	INS_TSX     = 0xba // transfer sp to x
 	INS_LDY_ABX = 0xbc // load y absolute x
