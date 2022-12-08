@@ -206,7 +206,7 @@ func (g *GUI) redraw() error {
 	surface.Lock()
 
 	// Perform video refresh
-	green := color.RGBA{G: uint8(255)}
+	green := color.RGBA{G: uint8(180)}
 
 	g.Video.Redraw(func(x, y int) {
 		surface.Set(x, y, green)
