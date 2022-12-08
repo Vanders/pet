@@ -8,15 +8,15 @@ type Instruction struct {
 }
 
 /*
-	INS_XXX_IM:  {IMMEDIATE, 1, "XXX #$%02x", c.op_xxx},
-	INS_XXX_ZP:  {ZERO_PAGE, 1, "XXX $%02x", c.op_xxx},
 	INS_XXX_AC:  {ACCUMULATOR, 0, "XXX ", c.op_xxx},
-	INS_XXX_AB:  {ABSOLUTE, 2, "XXX $%04x", c.op_xxx},
-	INS_XXX_ZPX: {ZERO_PAGE_X, 1, "XXX $%02x,X", c.op_xxx},
-	INS_XXX_ABX: {ABSOLUTE_X, 2, "XXX $%04x,X", c.op_xxx},
 	INS_XXX_ABY: {ABSOLUTE_Y, 2, "XXX $%04x,Y", c.op_xxx},
 	INS_XXX_IX:  {INDIRECT_X, 1, "XXX ($%02x,X)", c.op_xxx},
 	INS_XXX_IY:  {INDIRECT_Y, 1, "XXX ($%02x),Y", c.op_xxx},
+	INS_XXX_IM:  {IMMEDIATE, 1, "XXX #$%02x", c.op_xxx},
+	INS_XXX_ZP:  {ZERO_PAGE, 1, "XXX $%02x", c.op_xxx},
+	INS_XXX_AB:  {ABSOLUTE, 2, "XXX $%04x", c.op_xxx},
+	INS_XXX_ZPX: {ZERO_PAGE_X, 1, "XXX $%02x,X", c.op_xxx},
+	INS_XXX_ABX: {ABSOLUTE_X, 2, "XXX $%04x,X", c.op_xxx},
 */
 
 // makeInstructionSet returns the table of opcodes with their metadata
@@ -49,9 +49,8 @@ func (c *CPU) makeInstructionSet() map[Opcode]Instruction {
 		INS_BCC_RE: {RELATIVE, 1, "BCC $%02x", c.op_bcc},
 		INS_BCS_RE: {RELATIVE, 1, "BCS $%02x", c.op_bcs},
 
-		INS_BIT_AB:  {ABSOLUTE, 2, "BIT $%04x", c.op_bit},
-		INS_BIT_ZP:  {ZERO_PAGE, 1, "BIT $%02x", c.op_bit},
-		INS_BIT_ZPX: {ZERO_PAGE_X, 1, "BIT $%02x,X", c.op_bit},
+		INS_BIT_ZP: {ZERO_PAGE, 1, "BIT $%02x", c.op_bit},
+		INS_BIT_AB: {ABSOLUTE, 2, "BIT $%04x", c.op_bit},
 
 		INS_BEQ_RE: {RELATIVE, 1, "BEQ $%02x", c.op_beq},
 		INS_BMI_RE: {RELATIVE, 1, "BMI $%02x", c.op_bmi},
@@ -76,11 +75,12 @@ func (c *CPU) makeInstructionSet() map[Opcode]Instruction {
 		INS_CMP_IY:  {INDIRECT_Y, 1, "CMP ($%02x),Y", c.op_cmp},
 
 		INS_CPX_IM: {IMMEDIATE, 1, "CPX #$%02x", c.op_cpx},
-		INS_CPX_AB: {ABSOLUTE, 2, "CPX $%04x", c.op_cpx},
 		INS_CPX_ZP: {ZERO_PAGE, 1, "CPX $%02x", c.op_cpx},
+		INS_CPX_AB: {ABSOLUTE, 2, "CPX $%04x", c.op_cpx},
 
 		INS_CPY_IM: {IMMEDIATE, 1, "CPY #$%02x", c.op_cpy},
 		INS_CPY_ZP: {ZERO_PAGE, 1, "CPY $%02x", c.op_cpy},
+		INS_CPY_AB: {ABSOLUTE, 2, "CPY $%04x", c.op_cpy},
 
 		INS_DEC_ZP:  {ZERO_PAGE, 1, "DEC $%02x", c.op_dec},
 		INS_DEC_AB:  {ABSOLUTE, 2, "DEC $%04x", c.op_dec},
@@ -128,9 +128,10 @@ func (c *CPU) makeInstructionSet() map[Opcode]Instruction {
 		INS_LDX_ABY: {ABSOLUTE_Y, 2, "LDX $%04x,Y", c.op_ldx},
 
 		INS_LDY_IM:  {IMMEDIATE, 1, "LDY #$%02x", c.op_ldy},
-		INS_LDY_AB:  {ABSOLUTE, 2, "LDY $%04x", c.op_ldy},
 		INS_LDY_ZP:  {ZERO_PAGE, 1, "LDY $%02x", c.op_ldy},
+		INS_LDY_AB:  {ABSOLUTE, 2, "LDY $%04x", c.op_ldy},
 		INS_LDY_ZPX: {ZERO_PAGE_X, 1, "LDY $%02x,X", c.op_ldy},
+		INS_LDY_ABX: {ABSOLUTE_X, 2, "LDY $%04x,X", c.op_ldy},
 
 		INS_LSR_ZP:  {ZERO_PAGE, 1, "LSR $%02x", c.op_lsr},
 		INS_LSR_AC:  {ACCUMULATOR, 0, "LSR ", c.op_lsr},
@@ -194,8 +195,8 @@ func (c *CPU) makeInstructionSet() map[Opcode]Instruction {
 		INS_STX_AB:  {ABSOLUTE, 2, "STX $%04x", c.op_stx},
 		INS_STX_ZPY: {ZERO_PAGE_Y, 1, "STX $%02x,Y", c.op_stx},
 
-		INS_STY_AB:  {ABSOLUTE, 2, "STY $%04x", c.op_sty},
 		INS_STY_ZP:  {ZERO_PAGE, 1, "STY $%02x", c.op_sty},
+		INS_STY_AB:  {ABSOLUTE, 2, "STY $%04x", c.op_sty},
 		INS_STY_ZPX: {ZERO_PAGE_X, 1, "STY $%02x,X", c.op_sty},
 
 		INS_TAX: {IMPLIED, 0, "TAX ", c.op_tax},
@@ -353,6 +354,7 @@ const (
 	INS_LDX_ZPY = 0xb6 // load x zero page indexed y
 	INS_LDA_ABY = 0xb9 // load accumulator absolute y
 	INS_TSX     = 0xba // transfer sp to x
+	INS_LDY_ABX = 0xbc // load y absolute x
 	INS_LDA_ABX = 0xbd // load accumulator absolute x
 	INS_LDX_ABY = 0xbe // load x absolute indexed y
 
@@ -364,6 +366,7 @@ const (
 	INS_INY    = 0xc8 // increment y
 	INS_CMP_IM = 0xc9 // compare immediate
 	INS_DEX    = 0xca // decrement x
+	INS_CPY_AB = 0xcc // compare y absolute
 	INS_CMP_AB = 0xcd // compare absolute
 	INS_DEC_AB = 0xce // decrement absolute
 
