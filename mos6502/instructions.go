@@ -451,9 +451,9 @@ func (c *CPU) op_stx(i Instruction) error {
 	case ZERO_PAGE:
 		zpa := c.FetchByte()
 		c.WriteByteZeroPage(zpa, data)
-	case ZERO_PAGE_X:
+	case ZERO_PAGE_Y:
 		zpa := c.FetchByte()
-		c.WriteByteZeroPageX(zpa, data)
+		c.WriteByteZeroPageY(zpa, data)
 	default:
 		return errUnsupportedMode
 	}

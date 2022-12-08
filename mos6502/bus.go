@@ -31,6 +31,8 @@ func (c *CPU) FetchByteMode(m AddrMode) (Byte, error) {
 		return c.FetchByteZeroPage(), nil
 	case ZERO_PAGE_X:
 		return c.FetchByteZeroPageX(), nil
+	case ZERO_PAGE_Y:
+		return c.FetchByteZeroPageY(), nil
 	case INDIRECT_Y:
 		return c.FetchByteIndirectY(), nil
 	default:
@@ -65,6 +67,12 @@ func (c *CPU) FetchByteZeroPage() Byte {
 func (c *CPU) FetchByteZeroPageX() Byte {
 	zpa := c.FetchByte()
 	addr := Word(zpa + c.Registers.X.Get()&0xff)
+	return c.ReadByte(addr)
+}
+
+func (c *CPU) FetchByteZeroPageY() Byte {
+	zpa := c.FetchByte()
+	addr := Word(zpa + c.Registers.Y.Get()&0xff)
 	return c.ReadByte(addr)
 }
 
@@ -133,6 +141,11 @@ func (c *CPU) WriteByteZeroPage(zpa Byte, data Byte) {
 
 func (c *CPU) WriteByteZeroPageX(zpa Byte, data Byte) {
 	addr := Word(zpa + c.Registers.X.Get()&0xff)
+	c.WriteByte(addr, data)
+}
+
+func (c *CPU) WriteByteZeroPageY(zpa Byte, data Byte) {
+	addr := Word(zpa + c.Registers.Y.Get()&0xff)
 	c.WriteByte(addr, data)
 }
 
