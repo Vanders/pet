@@ -3,18 +3,15 @@ package main
 import (
 	"fmt"
 	"io"
-)
 
-type ReadWriter interface {
-	Read(Word) Byte
-	Write(Word, Byte)
-}
+	"github.com/vanders/pet/mos6502"
+)
 
 type Device interface {
 	GetBase() Word
 	GetSize() Word
 	CheckInterrupt() bool
-	ReadWriter
+	mos6502.ReadWriter
 }
 
 type Bus struct {

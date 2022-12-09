@@ -5,6 +5,9 @@ import (
 	"io"
 )
 
+// TrapFunc is a callback for entering an emulator trap from a CPU instruction
+type TrapFunc func(Byte)
+
 type CPU struct {
 	Registers struct {
 		A ByteRegister // Accumulater
@@ -20,9 +23,11 @@ type CPU struct {
 	insCount       int                    // Number of instructions executed
 	isr            bool                   // Is the CPU running the ISR?
 
-	Read  func(address Word) Byte        // Read a single byte from the bus
-	Write func(address Word, value Byte) // Write a single byte to the bus
-	Trap  func(selector Byte)            // Handle emulator trap
+	BusRead  ReadByteFunc  // Read a single byte from the bus
+	BusWrite WriteByteFunc // Write a single byte to the bus
+	Trap     TrapFunc      // Handle emulator trap
+
+	WordReadWrite // Read & Write 16bit words
 
 	Writer io.Writer // io.Writer for log output
 }
@@ -34,6 +39,19 @@ const (
 	STACK_BOTTOM  = 0x0100   // Address of the bottom of the stack
 	STACK_TOP     = 0x0200   // Address of the top of the stack
 )
+
+// Create & initialise a new CPU object
+func NewCPU(rf ReadByteFunc, wf WriteByteFunc, tf TrapFunc, w io.Writer) *CPU {
+	cpu := &CPU{
+		BusRead:  rf,
+		BusWrite: wf,
+		Trap:     tf,
+		Writer:   w,
+	}
+	cpu.ReadWriter = cpu
+
+	return cpu
+}
 
 // Log writes a formatted sting to the configured output
 func (c *CPU) Log(format string, a ...any) (int, error) {

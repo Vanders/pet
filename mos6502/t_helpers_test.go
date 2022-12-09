@@ -85,10 +85,7 @@ func newMem() *fakeMem {
 }
 
 func newCPU(m *fakeMem) *CPU {
-	c := &CPU{
-		Read:  m.Read,
-		Write: m.Write,
-	}
+	c := NewCPU(m.Read, m.Write, nil, nil)
 	c.Reset()
 	c.PC.Set(exeStart)
 

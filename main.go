@@ -54,6 +54,8 @@ type PET struct {
 	cassette *Cassette
 
 	gui *GUI
+
+	mos6502.WordReadWrite
 }
 
 const (
@@ -279,18 +281,14 @@ func main() {
 	defer gui.Stop()
 
 	// Initialise the CPU & connect it to the bus
-	cpu := mos6502.CPU{
-		Read:   bus.Read,
-		Write:  bus.Write,
-		Writer: writer,
-	}
+	cpu := mos6502.NewCPU(bus.Read, bus.Write, nil, writer)
 	cpu.Reset()
 
 	// Create a channel for GUI events
 	events := make(chan Event, 10)
 
 	pet := &PET{
-		cpu:      &cpu,
+		cpu:      cpu,
 		bus:      &bus,
 		ram:      ram,
 		pia1:     pia1,
@@ -299,6 +297,7 @@ func main() {
 		cassette: cas,
 		gui:      &gui,
 	}
+	pet.ReadWriter = &bus
 	cpu.Trap = pet.HandleTrap
 
 	// Run the CPU & pheripherals
@@ -311,7 +310,7 @@ func main() {
 			// Execute a single instruction
 			err := cpu.Step()
 			if err != nil {
-				dumpAndExit(&cpu, ram, fmt.Errorf("\nexecution stopped: %s", err))
+				dumpAndExit(cpu, ram, fmt.Errorf("\nexecution stopped: %s", err))
 			}
 
 			// Handle any GUI events
@@ -341,7 +340,7 @@ func main() {
 	gui.EventLoop(ctx, events)
 
 	wg.Wait()
-	dump(&cpu, ram)
+	dump(cpu, ram)
 }
 
 // Trap handler
@@ -390,20 +389,6 @@ func (p *PET) HandleTrap(selector Byte) {
 			panic(err)
 		}
 	}
-}
-
-func (p *PET) ReadWord(address mos6502.Word) mos6502.Word {
-	lo := p.bus.Read(address)
-	hi := p.bus.Read(address + 1)
-	return Word(hi)<<8 | Word(lo)
-}
-
-func (p *PET) WriteWord(address mos6502.Word, data mos6502.Word) {
-	hi := mos6502.Byte((data >> 8) & 0xFF)
-	lo := mos6502.Byte(data & 0xFF)
-
-	p.bus.Write(address, lo)
-	p.bus.Write(address+1, hi)
 }
 
 // Pheripheral Interface Adaptor #1

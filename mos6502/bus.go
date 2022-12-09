@@ -4,6 +4,49 @@ import (
 	"errors"
 )
 
+// Functions to read & write a single Byte from/to a Word address
+type (
+	ReadByteFunc  func(Word) Byte
+	WriteByteFunc func(Word, Byte)
+)
+
+// Interface for devices that can read & write Bytes
+type ReadWriter interface {
+	Read(Word) Byte
+	Write(Word, Byte)
+}
+
+// WordReadWrite implements methods for reading & writing 16bit Words
+type WordReadWrite struct {
+	ReadWriter
+}
+
+// ReadWord reads a 16bit word using 2 8bit reads
+func (w *WordReadWrite) ReadWord(address Word) Word {
+	lo := w.Read(address)
+	hi := w.Read(address + 1)
+	return Word(hi)<<8 | Word(lo)
+}
+
+// WriteWord writes a 16bit word to the given address
+func (w *WordReadWrite) WriteWord(address Word, data Word) {
+	hi := Byte((data >> 8) & 0xFF)
+	lo := Byte(data & 0xFF)
+
+	w.Write(address, lo)
+	w.Write(address+1, hi)
+}
+
+// Implement ReadWriter interface for the CPU as shims on top of the bus I/O
+// functions
+func (c *CPU) Read(address Word) Byte {
+	return c.BusRead(address)
+}
+
+func (c *CPU) Write(address Word, data Byte) {
+	c.BusWrite(address, data)
+}
+
 // ReadByte reads a single 8bit byte
 func (c *CPU) ReadByte(address Word) Byte {
 	return c.Read(address)
@@ -82,13 +125,6 @@ func (c *CPU) FetchByteIndirectY() Byte {
 	return c.ReadByte(addr + Word(c.Registers.Y.Get()))
 }
 
-// ReadWord reads a 16bit word using 2 8bit reads
-func (c *CPU) ReadWord(address Word) Word {
-	lo := c.Read(address)
-	hi := c.Read(address + 1)
-	return Word(hi)<<8 | Word(lo)
-}
-
 // FetchWord reads a 16bit word and increments PC by 2
 func (c *CPU) FetchWord() Word {
 	w := c.ReadWord(c.PC.Get())
@@ -157,15 +193,6 @@ func (c *CPU) WriteByteIndirectX(base Byte, data Byte) {
 func (c *CPU) WriteByteIndirectY(base Byte, data Byte) {
 	addr := c.ReadWord(Word(base))
 	c.WriteByte(addr+Word(c.Registers.Y.Get()), data)
-}
-
-// WriteWord writes a 16bit word to the given address
-func (c *CPU) WriteWord(address Word, data Word) {
-	hi := Byte((data >> 8) & 0xFF)
-	lo := Byte(data & 0xFF)
-
-	c.WriteByte(address, lo)
-	c.WriteByte(address+1, hi)
 }
 
 // PushByte writes an 8bit byte to the stack and increments the stack pointer by 1
