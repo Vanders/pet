@@ -81,7 +81,7 @@ func (c *CPU) FetchByteMode(m AddrMode) (Byte, error) {
 	case INDIRECT_Y:
 		return c.FetchByteIndirectY(), nil
 	default:
-		return Byte(0), errors.New("unknown or unsupported addressing mode")
+		return Byte(0), errors.New("FetchByteMode: unknown or unsupported addressing mode")
 	}
 }
 
@@ -149,7 +149,7 @@ func (c *CPU) FetchWordMode(m AddrMode) (Word, error) {
 	case INDIRECT:
 		return c.FetchWordIndirect(), nil
 	default:
-		return Word(0), errors.New("unknown or unsupported addressing mode")
+		return Word(0), errors.New("FetchWordMode: unknown or unsupported addressing mode")
 	}
 }
 
