@@ -123,8 +123,8 @@ func (c *CPU) FetchByteZeroPageY() Byte {
 
 func (c *CPU) FetchByteIndirectX() Byte {
 	zpa := c.FetchByte()
-	addr := c.ReadWord(Word(zpa))
-	return c.ReadByte(addr + Word(c.Registers.X.Get()))
+	addr := c.ReadWord(Word(zpa + c.Registers.X.Get()))
+	return c.ReadByte(addr)
 }
 
 func (c *CPU) FetchByteIndirectY() Byte {
